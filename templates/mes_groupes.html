@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="fr" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mes Groupes - Enseignant</title>
+    <link rel="stylesheet" href="{% static 'css/grp.css' %}">
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <h1>Mes Groupes</h1>
+            <p>Gérez vos classes et suivez la progression de vos étudiants</p>
+        </div>
+
+        <div class="filters">
+            <button class="filter-btn active">Tous (8)</button>
+            <button class="filter-btn">Actifs (6)</button>
+            <button class="filter-btn">Terminés (2)</button>
+            <button class="filter-btn">Anglais</button>
+            <button class="filter-btn">Français</button>
+        </div>
+
+        <div class="groups-grid">
+            <!-- Group Card 1 -->
+            <div class="group-card">
+                <div class="group-header">
+                    <span class="status-badge status-active">Actif</span>
+                    <span class="group-level">A2</span>
+                    <h3 class="group-title">Anglais Niveau A2</h3>
+                    <span class="group-lang">🇬🇧 Anglais - Intermédiaire</span>
+                </div>
+                <div class="group-body">
+                    <div class="stats-row">
+                        <div class="stat-box">
+                            <span class="stat-number">18</span>
+                            <span class="stat-label">Étudiants</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-number">14.5</span>
+                            <span class="stat-label">Moyenne</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-number">92%</span>
+                            <span class="stat-label">Assiduité</span>
+                        </div>
+                    </div>
+
+                    <div class="schedule-info">
+                        <h4>📅 Planning</h4>
+                        <p>Lundi & Mercredi • 14:00 - 16:00<br>Salle 101</p>
+                    </div>
+
+                    <div class="progress-section">
+                        <div class="progress-header">
+                            <span>Progression du programme</span>
+                            <span>75%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 75%"></div>
+                        </div>
+                    </div>
+
+                    <div class="students-preview">
+                        <div class="avatar-stack">
+                            <div class="avatar">AB</div>
+                            <div class="avatar">SK</div>
+                            <div class="avatar">ML</div>
+                            <div class="avatar">+15</div>
+                        </div>
+                        <span class="more-students">15 autres étudiants</span>
+                    </div>
+
+                    <div class="group-actions" style="margin-top: 1.5rem;">
+                        <button class="btn-action btn-primary">📊 Voir Détails</button>
+                        <button class="btn-action btn-secondary">📝 Notes</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Group Card 2 -->
+            <div class="group-card">
+                <div class="group-header" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    <span class="status-badge status-active">Actif</span>
+                    <span class="group-level">B1</span>
+                    <h3 class="group-title">Anglais Niveau B1</h3>
+                    <span class="group-lang">🇬🇧 Anglais - Avancé</span>
+                </div>
+                <div class="group-body">
+                    <div class="stats-row">
+                        <div class="stat-box">
+                            <span class="stat-number">22</span>
+                            <span class="stat-label">Étudiants</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-number">13.8</span>
+                            <span class="stat-label">Moyenne</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-number">88%</span>
+                            <span class="stat-label">Assiduité</span>
+                        </div>
+                    </div>
+
+                    <div class="schedule-info" style="background: #fdf2f8; border-color: #ec4899;">
+                        <h4 style="color: #9d174d;">📅 Planning</h4>
+                        <p style="color: #be185d;">Mardi & Jeudi • 10:00 - 12:00<br>Salle 203</p>
+                    </div>
+
+                    <div class="progress-section">
+                        <div class="progress-header">
+                            <span>Progression du programme</span>
+                            <span>60%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 60%; background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%)"></div>
+                        </div>
+                    </div>
+
+                    <div class="students-preview">
+                        <div class="avatar-stack">
+                            <div class="avatar" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%)">JD</div>
+                            <div class="avatar" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%)">AL</div>
+                            <div class="avatar" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%)">MK</div>
+                            <div class="avatar" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%)">+19</div>
+                        </div>
+                        <span class="more-students">19 autres étudiants</span>
+                    </div>
+
+                    <div class="group-actions" style="margin-top: 1.5rem;">
+                        <button class="btn-action btn-primary" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">📊 Voir Détails</button>
+                        <button class="btn-action btn-secondary">📝 Notes</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Group Card 3 -->
+            <div class="group-card">
+                <div class="group-header" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                    <span class="status-badge status-active">Actif</span>
+                    <span class="group-level">B2</span>
+                    <h3 class="group-title">Anglais Niveau B2</h3>
+                    <span class="group-lang">🇬🇧 Anglais - Confirmé</span>
+                </div>
+                <div class="group-body">
+                    <div class="stats-row">
+                        <div class="stat-box">
+                            <span class="stat-number">15</span>
+                            <span class="stat-label">Étudiants</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-number">15.2</span>
+                            <span class="stat-label">Moyenne</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-number">95%</span>
+                            <span class="stat-label">Assiduité</span>
+                        </div>
+                    </div>
+
+                    <div class="schedule-info" style="background: #ecfeff; border-color: #06b6d4;">
+                        <h4 style="color: #155e75;">📅 Planning</h4>
+                        <p style="color: #0e7490;">Vendredi • 09:00 - 12:00<br>Salle 305</p>
+                    </div>
+
+                    <div class="progress-section">
+                        <div class="progress-header">
+                            <span>Progression du programme</span>
+                            <span>45%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 45%; background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%)"></div>
+                        </div>
+                    </div>
+
+                    <div class="students-preview">
+                        <div class="avatar-stack">
+                            <div class="avatar" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)">SR</div>
+                            <div class="avatar" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)">NT</div>
+                            <div class="avatar" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)">+13</div>
+                        </div>
+                        <span class="more-students">13 autres étudiants</span>
+                    </div>
+
+                    <div class="group-actions" style="margin-top: 1.5rem;">
+                        <button class="btn-action btn-primary" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">📊 Voir Détails</button>
+                        <button class="btn-action btn-secondary">📝 Notes</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Group Card 4 -->
+            <div class="group-card">
+                <div class="group-header" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                    <span class="status-badge status-completed">Terminé</span>
+                    <span class="group-level">A1</span>
+                    <h3 class="group-title">Français Niveau A1</h3>
+                    <span class="group-lang">🇫🇷 Français - Débutant</span>
+                </div>
+                <div class="group-body">
+                    <div class="stats-row">
+                        <div class="stat-box">
+                            <span class="stat-number">20</span>
+                            <span class="stat-label">Étudiants</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-number">12.5</span>
+                            <span class="stat-label">Moyenne</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-number">85%</span>
+                            <span class="stat-label">Réussite</span>
+                        </div>
+                    </div>
+
+                    <div class="schedule-info" style="background: #fef3c7; border-color: #f59e0b;">
+                        <h4 style="color: #92400e;">📅 Session</h4>
+                        <p style="color: #b45309;">Terminé • Janvier - Mars 2026<br>Salle 102</p>
+                    </div>
+
+                    <div class="progress-section">
+                        <div class="progress-header">
+                            <span>Programme complété</span>
+                            <span>100%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 100%; background: linear-gradient(90deg, #fa709a 0%, #fee140 100%)"></div>
+                        </div>
+                    </div>
+
+                    <div class="students-preview">
+                        <div class="avatar-stack">
+                            <div class="avatar" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%)">LM</div>
+                            <div class="avatar" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%)">+19</div>
+                        </div>
+                        <span class="more-students">Session archivée</span>
+                    </div>
+
+                    <div class="group-actions" style="margin-top: 1.5rem;">
+                        <button class="btn-action btn-primary" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">📋 Rapport Final</button>
+                        <button class="btn-action btn-secondary">🗃️ Archiver</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Group Card 5 -->
+            <div class="group-card">
+                <div class="group-header" style="background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);">
+                    <span class="status-badge status-active">Actif</span>
+                    <span class="group-level">A1</span>
+                    <h3 class="group-title">Anglais Niveau A1</h3>
+                    <span class="group-lang">🇬🇧 Anglais - Débutant</span>
+                </div>
+                <div class="group-body">
+                    <div class="stats-row">
+                        <div class="stat-box">
+                            <span class="stat-number">25</span>
+                            <span class="stat-label">Étudiants</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-number">13.2</span>
+                            <span class="stat-label">Moyenne</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-number">90%</span>
+                            <span class="stat-label">Assiduité</span>
+                        </div>
+                    </div>
+
+                    <div class="schedule-info" style="background: #e0f8f7; border-color: #06b6d4;">
+                        <h4 style="color: #155e75;">📅 Planning</h4>
+                        <p style="color: #0e7490;">Samedi • 10:00 - 12:00<br>Salle 201</p>
+                    </div>
+
+                    <div class="progress-section">
+                        <div class="progress-header">
+                            <span>Progression du programme</span>
+                            <span>55%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 55%; background: linear-gradient(90deg, #84fab0 0%, #8fd3f4 100%)"></div>
+                        </div>
+                    </div>
+
+                    <div class="students-preview">
+                        <div class="avatar-stack">
+                            <div class="avatar" style="background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)">HC</div>
+                            <div class="avatar" style="background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)">PQ</div>
+                            <div class="avatar" style="background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)">RD</div>
+                            <div class="avatar" style="background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)">+22</div>
+                        </div>
+                        <span class="more-students">22 autres étudiants</span>
+                    </div>
+
+                    <div class="group-actions" style="margin-top: 1.5rem;">
+                        <button class="btn-action btn-primary" style="background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);">📊 Voir Détails</button>
+                        <button class="btn-action btn-secondary">📝 Notes</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Group Card 6 -->
+            <div class="group-card">
+                <div class="group-header" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                    <span class="status-badge status-active">Actif</span>
+                    <span class="group-level">B1</span>
+                    <h3 class="group-title">Français Niveau B1</h3>
+                    <span class="group-lang">🇫🇷 Français - Avancé</span>
+                </div>
+                <div class="group-body">
+                    <div class="stats-row">
+                        <div class="stat-box">
+                            <span class="stat-number">16</span>
+                            <span class="stat-label">Étudiants</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-number">14.8</span>
+                            <span class="stat-label">Moyenne</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-number">94%</span>
+                            <span class="stat-label">Assiduité</span>
+                        </div>
+                    </div>
+
+                    <div class="schedule-info" style="background: #fef3c7; border-color: #f59e0b;">
+                        <h4 style="color: #92400e;">📅 Planning</h4>
+                        <p style="color: #b45309;">Dimanche • 15:00 - 17:00<br>Salle 104</p>
+                    </div>
+
+                    <div class="progress-section">
+                        <div class="progress-header">
+                            <span>Progression du programme</span>
+                            <span>70%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 70%; background: linear-gradient(90deg, #fa709a 0%, #fee140 100%)"></div>
+                        </div>
+                    </div>
+
+                    <div class="students-preview">
+                        <div class="avatar-stack">
+                            <div class="avatar" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%)">EF</div>
+                            <div class="avatar" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%)">GH</div>
+                            <div class="avatar" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%)">+14</div>
+                        </div>
+                        <span class="more-students">14 autres étudiants</span>
+                    </div>
+
+                    <div class="group-actions" style="margin-top: 1.5rem;">
+                        <button class="btn-action btn-primary" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">📊 Voir Détails</button>
+                        <button class="btn-action btn-secondary">📝 Notes</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Group Card 7 -->
+            <div class="group-card">
+                <div class="group-header" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">
+                    <span class="status-badge status-completed">Terminé</span>
+                    <span class="group-level">B2</span>
+                    <h3 class="group-title">Anglais Niveau B2</h3>
+                    <span class="group-lang">🇬🇧 Anglais - Confirmé</span>
+                </div>
+                <div class="group-body">
+                    <div class="stats-row">
+                        <div class="stat-box">
+                            <span class="stat-number">19</span>
+                            <span class="stat-label">Étudiants</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-number">16.1</span>
+                            <span class="stat-label">Moyenne</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-number">96%</span>
+                            <span class="stat-label">Réussite</span>
+                        </div>
+                    </div>
+
+                    <div class="schedule-info" style="background: #fce7f3; border-color: #ec4899;">
+                        <h4 style="color: #9d174d;">📅 Session</h4>
+                        <p style="color: #be185d;">Terminé • Octobre - Décembre 2025<br>Salle 306</p>
+                    </div>
+
+                    <div class="progress-section">
+                        <div class="progress-header">
+                            <span>Programme complété</span>
+                            <span>100%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 100%; background: linear-gradient(90deg, #a8edea 0%, #fed6e3 100%)"></div>
+                        </div>
+                    </div>
+
+                    <div class="students-preview">
+                        <div class="avatar-stack">
+                            <div class="avatar" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)">IJ</div>
+                            <div class="avatar" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)">KL</div>
+                            <div class="avatar" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)">+17</div>
+                        </div>
+                        <span class="more-students">Session archivée</span>
+                    </div>
+
+                    <div class="group-actions" style="margin-top: 1.5rem;">
+                        <button class="btn-action btn-primary" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">📋 Rapport Final</button>
+                        <button class="btn-action btn-secondary">🗃️ Archiver</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Group Card 8 -->
+            <div class="group-card">
+                <div class="group-header" style="background: linear-gradient(135deg, #ff9a56 0%, #ff6a88 100%);">
+                    <span class="status-badge status-active">Actif</span>
+                    <span class="group-level">C1</span>
+                    <h3 class="group-title">Anglais Niveau C1</h3>
+                    <span class="group-lang">🇬🇧 Anglais - Maîtrise</span>
+                </div>
+                <div class="group-body">
+                    <div class="stats-row">
+                        <div class="stat-box">
+                            <span class="stat-number">12</span>
+                            <span class="stat-label">Étudiants</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-number">17.3</span>
+                            <span class="stat-label">Moyenne</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-number">98%</span>
+                            <span class="stat-label">Assiduité</span>
+                        </div>
+                    </div>
+
+                    <div class="schedule-info" style="background: #fef2f2; border-color: #dc2626;">
+                        <h4 style="color: #7f1d1d;">📅 Planning</h4>
+                        <p style="color: #991b1b;">Jeudi • 18:00 - 20:00<br>Salle 407</p>
+                    </div>
+
+                    <div class="progress-section">
+                        <div class="progress-header">
+                            <span>Progression du programme</span>
+                            <span>80%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 80%; background: linear-gradient(90deg, #ff9a56 0%, #ff6a88 100%)"></div>
+                        </div>
+                    </div>
+
+                    <div class="students-preview">
+                        <div class="avatar-stack">
+                            <div class="avatar" style="background: linear-gradient(135deg, #ff9a56 0%, #ff6a88 100%)">MN</div>
+                            <div class="avatar" style="background: linear-gradient(135deg, #ff9a56 0%, #ff6a88 100%)">OP</div>
+                            <div class="avatar" style="background: linear-gradient(135deg, #ff9a56 0%, #ff6a88 100%)">+10</div>
+                        </div>
+                        <span class="more-students">10 autres étudiants</span>
+                    </div>
+
+                    <div class="group-actions" style="margin-top: 1.5rem;">
+                        <button class="btn-action btn-primary" style="background: linear-gradient(135deg, #ff9a56 0%, #ff6a88 100%);">📊 Voir Détails</button>
+                        <button class="btn-action btn-secondary">📝 Notes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'js/groupe.js' %}"></script>
+</body>
+</html>

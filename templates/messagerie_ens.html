@@ -1,0 +1,191 @@
+
+<!DOCTYPE html>
+{% load static %}
+<html lang="fr" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messagerie - Enseignant</title>
+    <link rel="stylesheet" href="{% static 'css/messagerie_ens.css' %}">
+</head>
+<body>
+    <div class="container">
+        <div class="messaging-app">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <h2>💬 Messagerie</h2>
+                    <button class="new-message-btn">
+                        <span>+</span> Nouveau Message
+                    </button>
+                </div>
+                
+                <div class="search-messages">
+                    <input type="text" placeholder="Rechercher une conversation...">
+                </div>
+
+                <div class="conversations-list">
+                    <div class="conversation-item active">
+                        <div class="conversation-avatar">
+                            AM
+                            <span class="online-indicator"></span>
+                        </div>
+                        <div class="conversation-info">
+                            <div class="conversation-name">
+                                Ahmed Mansouri
+                                <span class="conversation-time">14:30</span>
+                            </div>
+                            <div class="conversation-preview">Merci pour les informations...</div>
+                        </div>
+                    </div>
+
+                    <div class="conversation-item unread">
+                        <div class="conversation-avatar">LK</div>
+                        <div class="conversation-info">
+                            <div class="conversation-name">
+                                Leila Kadiri
+                                <span class="conversation-time">13:45</span>
+                            </div>
+                            <div class="conversation-preview">Bonjour, concernant les notes de mon fils...</div>
+                        </div>
+                        <span class="unread-badge">2</span>
+                    </div>
+
+                    <div class="conversation-item">
+                        <div class="conversation-avatar">SB</div>
+                        <div class="conversation-info">
+                            <div class="conversation-name">
+                                Samir Benali
+                                <span class="conversation-time">Hier</span>
+                            </div>
+                            <div class="conversation-preview">Pouvez-vous m'envoyer le planning ?</div>
+                        </div>
+                    </div>
+
+                    <div class="conversation-item">
+                        <div class="conversation-avatar">FR</div>
+                        <div class="conversation-info">
+                            <div class="conversation-name">
+                                Fatima Rahmouni
+                                <span class="conversation-time">Lun</span>
+                            </div>
+                            <div class="conversation-preview">Merci beaucoup pour votre aide</div>
+                        </div>
+                    </div>
+
+                    <div class="conversation-item">
+                        <div class="conversation-avatar">YK</div>
+                        <div class="conversation-info">
+                            <div class="conversation-name">
+                                Youssef Kadiri
+                                <span class="conversation-time">Dim</span>
+                            </div>
+                            <div class="conversation-preview">Mon enfant sera absent demain...</div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Chat Area -->
+            <main class="chat-area">
+                <header class="chat-header">
+                    <div class="chat-user">
+                        <div class="chat-user-avatar">AM</div>
+                        <div class="chat-user-info">
+                            <h3>Ahmed Mansouri</h3>
+                            <p>🟢 En ligne</p>
+                        </div>
+                    </div>
+                    <div class="chat-actions">
+                        <button class="chat-action-btn">📞</button>
+                        <button class="chat-action-btn">📹</button>
+                        <button class="chat-action-btn">ℹ️</button>
+                    </div>
+                </header>
+
+                <div class="messages-container">
+                    <div class="message-date">
+                        <span>Aujourd'hui</span>
+                    </div>
+
+                    <div class="message">
+                        <div class="message-avatar">AM</div>
+                        <div class="message-content">
+                            <div class="message-bubble">
+                                Bonjour Monsieur, j'espère que vous allez bien. Je voulais avoir des nouvelles concernant la progression de mon fils en anglais.
+                            </div>
+                            <div class="message-time">14:25</div>
+                        </div>
+                    </div>
+
+                    <div class="message own">
+                        <div class="message-avatar">ME</div>
+                        <div class="message-content">
+                            <div class="message-bubble">
+                                Bonjour Monsieur Mansouri, merci de votre message. Votre fils progresse très bien ! Il a obtenu 16/20 à sa dernière évaluation orale.
+                            </div>
+                            <div class="message-time">14:28 ✓✓</div>
+                        </div>
+                    </div>
+
+                    <div class="message">
+                        <div class="message-avatar">AM</div>
+                        <div class="message-content">
+                            <div class="message-bubble">
+                                C'est une excellente nouvelle ! Est-ce que vous pouvez me partager le support de cours pour qu'il puisse réviser à la maison ?
+                            </div>
+                            <div class="message-time">14:29</div>
+                        </div>
+                    </div>
+
+                    <div class="message own">
+                        <div class="message-avatar">ME</div>
+                        <div class="message-content">
+                            <div class="message-bubble">
+                                Bien sûr, je vous envoie la fiche de révision ci-jointe.
+                                <div class="message-attachment">
+                                    <div class="attachment-icon">📄</div>
+                                    <div class="attachment-info">
+                                        <div class="attachment-name">Fiche_revision_A2.pdf</div>
+                                        <div class="attachment-size">2.4 MB</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="message-time">14:30 ✓✓</div>
+                        </div>
+                    </div>
+
+                    <div class="message">
+                        <div class="message-avatar">AM</div>
+                        <div class="message-content">
+                            <div class="message-bubble">
+                                Merci pour les informations, je vais l'aider à réviser ce weekend.
+                            </div>
+                            <div class="message-time">14:32</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chat-input-area">
+                    <div class="quick-responses">
+                        <button class="quick-response">👍 D'accord</button>
+                        <button class="quick-response">📅 Je vérifie et je reviens vers vous</button>
+                        <button class="quick-response">✅ C'est noté</button>
+                        <button class="quick-response">🙏 Merci</button>
+                    </div>
+                    <div class="input-container">
+                        <div class="input-actions">
+                            <button class="input-btn">📎</button>
+                            <button class="input-btn">😊</button>
+                        </div>
+                        <input type="text" class="message-input" placeholder="Écrivez votre message...">
+                        <button class="send-btn">➤</button>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="{% static 'js/messagerie_ens.js' %}"></script>
+</body>
+</html>

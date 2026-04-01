@@ -1,0 +1,358 @@
+
+// absences.js - Attendance Management System
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Helper to get JWT token
+    function getAuthToken() {
+        return localStorage.getItem('access_token') || sessionStorage.getItem('access_token') || null;
+    }
+
+    // State management
+    const state = {
+        students: [],
+        attendance: {},
+        sessionId: null,
+        groupeId: null,
+        apiBaseUrl: '/api',
+        authToken: getAuthToken(),
+        currentUser: null
+    };
+
+    // DOM Elements
+    const elements = {
+        studentList: document.getElementById('studentList'),
+        searchInput: document.getElementById('searchStudents'),
+        btnSave: document.getElementById('btnSave'),
+        btnReport: document.getElementById('btnReport'),
+        countPresent: document.getElementById('countPresent'),
+        countAbsent: document.getElementById('countAbsent'),
+        countLate: document.getElementById('countLate'),
+        countJustified: document.getElementById('countJustified'),
+        totalStudents: document.getElementById('totalStudents'),
+        alertsContainer: document.getElementById('alertsContainer'),
+        sessionName: document.getElementById('sessionName'),
+        sessionDetails: document.getElementById('sessionDetails'),
+        currentDay: document.getElementById('currentDay'),
+        currentMonth: document.getElementById('currentMonth'),
+        currentWeekday: document.getElementById('currentWeekday'),
+        currentWeek: document.getElementById('currentWeek')
+    };
+
+    // Initialize
+    init();
+
+    function init() {
+        if (!state.authToken) {
+            showNotification('❌ Veuillez vous connecter d\'abord', 'error');
+            setTimeout(() => window.location.href = '/login/', 2000);
+            return;
+        }
+
+        loadCurrentUser();
+        setCurrentDate();
+        setupEventListeners();
+
+        // Get groupe ID from URL or default
+        const urlParams = new URLSearchParams(window.location.search);
+        state.groupeId = urlParams.get('groupe') || 1;
+
+        loadSessionInfo();
+        loadStudents();
+    }
+
+    function loadCurrentUser() {
+        const userStr = localStorage.getItem('user') || sessionStorage.getItem('user');
+        if (userStr) {
+            try {
+                state.currentUser = JSON.parse(userStr);
+            } catch (e) {
+                console.error('Error parsing user:', e);
+            }
+        }
+    }
+
+    function setCurrentDate() {
+        const now = new Date();
+        const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+        const months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
+
+        elements.currentDay.textContent = now.getDate();
+        elements.currentMonth.textContent = months[now.getMonth()];
+        elements.currentWeekday.textContent = days[now.getDay()];
+
+        // Calculate week number
+        const start = new Date(now.getFullYear(), 0, 1);
+        const diff = now - start + ((start.getTimezoneOffset() - now.getTimezoneOffset()) * 60 * 1000);
+        const oneWeek = 1000 * 60 * 60 * 24 * 7;
+        elements.currentWeek.textContent = Math.floor(diff / oneWeek);
+    }
+
+    async function loadSessionInfo() {
+        try {
+            // Load groupe info
+            const response = await fetch(`${state.apiBaseUrl}/groupes/${state.groupeId}/`, {
+                headers: { 'Authorization': `Bearer ${state.authToken}` }
+            });
+
+            if (response.ok) {
+                const groupe = await response.json();
+                elements.sessionName.textContent = `${groupe.langue} Niveau ${groupe.niveau}`;
+                elements.sessionDetails.textContent = `Salle ${groupe.salle || '101'} • En cours`;
+            }
+        } catch (error) {
+            console.error('Error loading session:', error);
+            elements.sessionName.textContent = 'Anglais Niveau A2 - Groupe 1';
+            elements.sessionDetails.textContent = 'Salle 101 • 14:00 - 16:00';
+        }
+    }
+
+    async function loadStudents() {
+        try {
+            showLoading();
+
+            // Load students for this groupe
+            const response = await fetch(`${state.apiBaseUrl}/etudiants/?groupe=${state.groupeId}`, {
+                headers: {
+                    'Authorization': `Bearer ${state.authToken}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                if (response.status === 401) {
+                    handleAuthError();
+                    return;
+                }
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            const data = await response.json();
+            state.students = Array.isArray(data) ? data : (data.results || []);
+
+            // Initialize attendance status for each student
+            state.students.forEach(student => {
+                if (!state.attendance[student.id]) {
+                    state.attendance[student.id] = 'present'; // Default to present
+                }
+            });
+
+            renderStudents(state.students);
+            updateStats();
+
+        } catch (error) {
+            console.error('Error loading students:', error);
+            showNotification('⚠️ Mode hors ligne - Données statiques', 'warning');
+            renderStaticStudents();
+        }
+    }
+
+    function showLoading() {
+        elements.studentList.innerHTML = `
+            <div class="loading-students">
+                <div style="width: 50px; height: 50px; border: 4px solid #e2e8f0; border-top-color: #667eea; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div>
+                <p style="color: #64748b;">Chargement des étudiants...</p>
+            </div>
+        `;
+    }
+
+    function renderStudents(students) {
+        if (students.length === 0) {
+            elements.studentList.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">👥</div>
+                    <h3>Aucun étudiant dans ce groupe</h3>
+                    <p>Les étudiants apparaîtront ici une fois inscrits.</p>
+                </div>
+            `;
+            return;
+        }
+
+        elements.totalStudents.textContent = students.length;
+
+        elements.studentList.innerHTML = students.map((student, index) => {
+            const absenceCount = student.absences || 0;
+            const alertClass = absenceCount >= 3 ? 'alert' : '';
+            const countClass = absenceCount >= 4 ? 'danger' : (absenceCount >= 2 ? 'warning' : '');
+            const currentStatus = state.attendance[student.id] || 'present';
+
+            return `
+                <div class="student-item ${alertClass}" data-id="${student.id}" data-name="${escapeHtml(student.user?.first_name + ' ' + student.user?.last_name)}">
+                    <div class="student-number">${String(index + 1).padStart(2, '0')}</div>
+                    <div class="student-avatar">${getInitials(student.user?.first_name + ' ' + student.user?.last_name)}</div>
+                    <div class="student-info">
+                        <h4>${escapeHtml(student.user?.first_name + ' ' + student.user?.last_name)}</h4>
+                        <p>ID: ${student.id} • Niveau: ${student.niveau_actuel || 'A2'}</p>
+                    </div>
+                    <div class="absence-count ${countClass}">
+                        <div>
+                            <span>${absenceCount}</span>
+                            <label>Absence${absenceCount > 1 ? 's' : ''}</label>
+                        </div>
+                    </div>
+                    <div class="status-selector">
+                        <label class="status-option">
+                            <input type="radio" name="student-${student.id}" value="present" ${currentStatus === 'present' ? 'checked' : ''}>
+                            <span class="status-label present">✅ Présent</span>
+                        </label>
+                        <label class="status-option">
+                            <input type="radio" name="student-${student.id}" value="absent" ${currentStatus === 'absent' ? 'checked' : ''}>
+                            <span class="status-label absent">❌ Absent</span>
+                        </label>
+                        <label class="status-option">
+                            <input type="radio" name="student-${student.id}" value="late" ${currentStatus === 'late' ? 'checked' : ''}>
+                            <span class="status-label late">⏰ Retard</span>
+                        </label>
+                        <label class="status-option">
+                            <input type="radio" name="student-${student.id}" value="justified" ${currentStatus === 'justified' ? 'checked' : ''}>
+                            <span class="status-label justified">📝 Justifié</span>
+                        </label>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        setupStudentListeners();
+        checkAlerts();
+    }
+
+    function setupStudentListeners() {
+        document.querySelectorAll('.status-option input').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                const studentId = e.target.name.replace('student-', '');
+                state.attendance[studentId] = e.target.value;
+                updateStats();
+
+                // Visual feedback
+                const studentItem = e.target.closest('.student-item');
+                studentItem.style.animation = 'none';
+                setTimeout(() => {
+                    studentItem.style.animation = 'fadeInUp 0.4s ease';
+                }, 10);
+            });
+        });
+    }
+
+    function updateStats() {
+        const counts = { present: 0, absent: 0, late: 0, justified: 0 };
+
+        Object.values(state.attendance).forEach(status => {
+            counts[status]++;
+        });
+
+        // Animate counter changes
+        animateCounter(elements.countPresent, counts.present);
+        animateCounter(elements.countAbsent, counts.absent);
+        animateCounter(elements.countLate, counts.late);
+        animateCounter(elements.countJustified, counts.justified);
+    }
+
+    function animateCounter(element, targetValue) {
+        const currentValue = parseInt(element.textContent) || 0;
+        if (currentValue === targetValue) return;
+
+        element.style.transform = 'scale(1.2)';
+        element.style.color = '#667eea';
+        element.textContent = targetValue;
+
+        setTimeout(() => {
+            element.style.transform = 'scale(1)';
+            element.style.color = '';
+        }, 300);
+    }
+
+    function checkAlerts() {
+        const alerts = [];
+
+        state.students.forEach(student => {
+            const absenceCount = student.absences || 0;
+            if (absenceCount >= 3) {
+                alerts.push({
+                    name: `${student.user?.first_name} ${student.user?.last_name}`,
+                    count: absenceCount
+                });
+            }
+        });
+
+        if (alerts.length > 0) {
+            elements.alertsContainer.innerHTML = alerts.map(alert => `
+                <div class="alert-box">
+                    <div class="alert-icon">⚠️</div>
+                    <div class="alert-content">
+                        <h3>Alerte de Dépassement</h3>
+                        <p><strong>${escapeHtml(alert.name)}</strong> a dépassé 3 absences (${alert.count} total). Une notification a été envoyée aux parents.</p>
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            elements.alertsContainer.innerHTML = '';
+        }
+    }
+
+    async function saveAttendance() {
+        elements.btnSave.disabled = true;
+        elements.btnSave.textContent = '💾 Enregistrement...';
+
+        try {
+            const attendanceData = Object.entries(state.attendance).map(([studentId, status]) => ({
+                etudiant: parseInt(studentId),
+                statut: status.toUpperCase(),
+                date: new Date().toISOString().split('T')[0],
+                seance: state.sessionId
+            }));
+
+            const response = await fetch(`${state.apiBaseUrl}/absences/bulk/`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${state.authToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ absences: attendanceData })
+            });
+
+            if (!response.ok) throw new Error('Failed to save');
+
+            showNotification('✅ Présences enregistrées avec succès', 'success');
+
+        } catch (error) {
+            console.error('Error saving:', error);
+            showNotification('❌ Erreur lors de l\'enregistrement', 'error');
+        } finally {
+            elements.btnSave.disabled = false;
+            elements.btnSave.textContent = '💾 Enregistrer';
+        }
+    }
+
+    function generateReport() {
+        showNotification('📄 Génération du PDF...', 'info');
+
+        // Simulate PDF generation
+        setTimeout(() => {
+            const present = elements.countPresent.textContent;
+            const absent = elements.countAbsent.textContent;
+            const late = elements.countLate.textContent;
+
+            const reportContent = `
+RAPPORT DE PRÉSENCE
+Date: ${new Date().toLocaleDateString('fr-FR')}
+Groupe: ${elements.sessionName.textContent}
+
+RÉCAPITULATIF:
+- Présents: ${present}
+- Absents: ${absent}
+- Retards: ${late}
+- Justifiés: ${elements.countJustified.textContent}
+
+DÉTAIL PAR ÉTUDIANT:
+${state.students.map(s => {
+    const status = state.attendance[s.id] || 'present';
+    const statusLabel = { present: 'Présent', absent: 'Absent', late: 'Retard', justified: 'Justifié' }[status];
+    return `- ${s.user?.first_name} ${s.user?.last_name}: ${statusLabel}`;
+}).join('\n')}
+            `.trim();
+
+            // Create and download text file (replace with actual PDF generation)
+            const blob = new Blob([reportContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `rapport-presence

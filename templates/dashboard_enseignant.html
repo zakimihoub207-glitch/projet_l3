@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de Bord - Enseignant</title>
+
+    <!-- LINK CSS -->
+    <link rel="stylesheet" href="{% static 'css/dash_eng.css' %}">
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="profile-img">👨‍🏫</div>
+            <h3 id="userName">Prof. Ahmed Benali</h3>
+            <p>Enseignant d'Anglais</p>
+        </div>
+
+        <ul class="nav-menu">
+            <li><a href="#" class="nav-link active">📊 Tableau de Bord</a></li>
+            <li><a href="{% url 'mes_groupes' %}" class="nav-link">👥 Mes Groupes</a></li>
+            <li><a href="#" class="nav-link">📝 Gestion des Notes</a></li>
+            <li><a href="{% url 'absences' %}" class="nav-link">📅 Absences</a></li>
+            <li><a href="{% url 'ressources' %}" class="nav-link">📚 Ressources</a></li>
+            <li><a href="{% url 'messagerie_enseignant' %}" class="nav-link">💬 Messagerie</a></li>
+            <li><a href="#" class="nav-link">⚙️ Paramètres</a></li>
+        </ul>
+    </aside>
+
+    <!-- Main -->
+    <main class="main-content">
+        <div class="header">
+            <h1>Tableau de Bord</h1>
+
+            <div class="header-actions">
+                <button class="notification-btn">🔔 <span class="badge">3</span></button>
+                <button class="notification-btn">✉️ <span class="badge">5</span></button>
+                <button id="logoutBtn">🚪</button>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value"></div>
+                <div class="stat-label">Étudiants</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-value"></div>
+                <div class="stat-label">Groupes</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-value"></div>
+                <div class="stat-label">Heures</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-value"></div>
+                <div class="stat-label">Moyenne</div>
+            </div>
+        </div>
+    </main>
+
+    <!-- LINK JS -->
+    <script src="{% static 'js/dash_ens.js' %}"></script>
+    <
+</body>
+</html>
