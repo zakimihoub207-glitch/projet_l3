@@ -8,6 +8,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 
+
 from api.views import (
     # Auth
     login_view,
@@ -56,6 +57,7 @@ from api.views import (
     mon_planning_view,
     mon_niveau_view,
     mes_ressources_view,
+    messagerie_etudiant_view,
 
     # Parent
     dashboard_parent,
@@ -84,7 +86,7 @@ urlpatterns = [
     # ============================================================
     # SECRÉTARIAT
     # ============================================================
-    path('secretariat/',                     dashboard_secretariat,   name='dashboard_secretariat'),
+    path('dashboard/secretariat/',                     dashboard_secretariat,   name='dashboard_secretariat'),
     path('secretariat/etudiants/',           etudiants_view,          name='etudiants'),
     path('secretariat/etudiants/<int:pk>/',  etudiant_detail_view,    name='etudiant_detail'),
     path('secretariat/enseignants/',         enseignants_view,        name='enseignants'),
@@ -120,11 +122,12 @@ urlpatterns = [
     path('enseignant/evaluations/',      evaluations_view,           name='evaluations'),
 
 
-    path('etudiant/',                    dashboard_etudiant,  name='dashboard_etudiant'),
+    path('dashboard/etudiant/',                    dashboard_etudiant,  name='dashboard_etudiant'),
     path('etudiant/notes/',              mes_notes_view,      name='mes_notes'),
     path('etudiant/planning/',           mon_planning_view,   name='mon_planning'),
     path('etudiant/niveau/',             mon_niveau_view,     name='mon_niveau'),
     path('etudiant/ressources/',         mes_ressources_view, name='mes_ressources'),
+    path('etudiant/messagerie/',     messagerie_etudiant_view, name='messagerie_etudiant'),
 
 
     path('parent/',                      dashboard_parent,         name='dashboard_parent'),

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messagerie - Espace Étudiant</title>
+   <link rel="stylesheet" href="{% static 'css/msg_etd.css' %}">
+</head>
+<body>
+    <div class="container">
+       class="back-btn">← Retour au Tableau de Bord</a>
+
+        <div class="header">
+            <h1>💬 Messagerie</h1>
+            <p>Communiquez avec vos professeurs et le secrétariat</p>
+        </div>
+
+        <div class="chat-container">
+            <!-- Sidebar -->
+            <div class="chat-sidebar">
+                <div class="sidebar-header">
+                    <button class="new-message-btn">
+                        <span>✏️</span>
+                        Nouveau message
+                    </button>
+                </div>
+
+                <div class="search-conversations">
+                    <div class="search-input">
+                        <span>🔍</span>
+                        <input type="text" placeholder="Rechercher une conversation...">
+                    </div>
+                </div>
+
+                <div class="conversations-list">
+                    <div class="conversation-item active">
+                        <div class="conversation-avatar online">PJ</div>
+                        <div class="conversation-info">
+                            <div class="conversation-name">
+                                Prof. Johnson
+                                <span class="conversation-time">10:30</span>
+                            </div>
+                            <div class="conversation-preview unread">
+                                D'accord, je vous envoie les exercices complémentaires.
+                            </div>
+                        </div>
+                        <span class="unread-badge">2</span>
+                    </div>
+
+                    <div class="conversation-item">
+                        <div class="conversation-avatar">PG</div>
+                        <div class="conversation-info">
+                            <div class="conversation-name">
+                                Prof. Garcia
+                                <span class="conversation-time">Hier</span>
+                            </div>
+                            <div class="conversation-preview">
+                                La classe d'espagnol est déplacée en salle B3 demain.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="conversation-item">
+                        <div class="conversation-avatar online">PS</div>
+                        <div class="conversation-info">
+                            <div class="conversation-name">
+                                Prof. Smith
+                                <span class="conversation-time">Lun</span>
+                            </div>
+                            <div class="conversation-preview">
+                                Merci pour votre participation active aujourd'hui !
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="conversation-item">
+                        <div class="conversation-avatar">SC</div>
+                        <div class="conversation-info">
+                            <div class="conversation-name">
+                                Secrétariat
+                                <span class="conversation-time">23 Mar</span>
+                            </div>
+                            <div class="conversation-preview">
+                                Votre inscription au groupe de conversation a été confirmée.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="conversation-item">
+                        <div class="conversation-avatar">DR</div>
+                        <div class="conversation-info">
+                            <div class="conversation-name">
+                                Direction
+                                <span class="conversation-time">20 Mar</span>
+                            </div>
+                            <div class="conversation-preview">
+                                Planning des examens de fin d'année disponible.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Chat Area -->
+            <div class="chat-main">
+                <div class="chat-header">
+                    <div class="chat-user-info">
+                        <div class="chat-user-avatar">
+                            PJ
+                            <span class="status-indicator"></span>
+                        </div>
+                        <div class="chat-user-details">
+                            <h3>Prof. Johnson</h3>
+                            <p>En ligne</p>
+                        </div>
+                    </div>
+                    <div class="chat-actions">
+                        <button class="icon-btn">📞</button>
+                        <button class="icon-btn">📹</button>
+                        <button class="icon-btn">ℹ️</button>
+                    </div>
+                </div>
+
+                <div class="messages-container">
+                    <div class="message-date">
+                        <span>Aujourd'hui</span>
+                    </div>
+
+                    <div class="message received">
+                        <div class="message-avatar">PJ</div>
+                        <div class="message-content">
+                            <div class="message-text">
+                                Bonjour Sarah, j'ai corrigé votre devoir sur les temps du passé.
+                                C'est très bien dans l'ensemble !
+                            </div>
+                            <div class="message-time">09:15</div>
+                        </div>
+                    </div>
+
+                    <div class="message sent">
+                        <div class="message-avatar">SM</div>
+                        <div class="message-content">
+                            <div class="message-text">
+                                Merci beaucoup Professeur ! Y a-t-il des points particuliers
+                                sur lesquels je dois travailler ?
+                            </div>
+                            <div class="message-time">09:42 ✓</div>
+                        </div>
+                    </div>
+
+                    <div class="message received">
+                        <div class="message-avatar">PJ</div>
+                        <div class="message-content">
+                            <div class="message-text">
+                                Principalement le past perfect continuous. Je vous envoie
+                                des exercices complémentaires pour pratiquer.
+                            </div>
+                            <div class="message-attachment">
+                                <div class="attachment-icon">📄</div>
+                                <div class="attachment-info">
+                                    <div class="attachment-name">Exercices_Past_Perfect.pdf</div>
+                                    <div class="attachment-size">1.2 MB</div>
+                                </div>
+                            </div>
+                            <div class="message-time">10:30</div>
+                        </div>
+                    </div>
+
+                    <div class="message sent">
+                        <div class="message-avatar">SM</div>
+                        <div class="message-content">
+                            <div class="message-text">
+                                Parfait, merci beaucoup ! Je vais les faire ce week-end.
+                            </div>
+                            <div class="message-time">10:35 ✓</div>
+                        </div>
+                    </div>
+
+                    <div class="message received">
+                        <div class="message-avatar">PJ</div>
+                        <div class="message-content">
+                            <div class="message-text">
+                                N'hésitez pas si vous avez des questions. Bon courage ! 💪
+                            </div>
+                            <div class="message-time">10:36</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="quick-actions">
+                    <button class="quick-action-btn">📎 Joindre un fichier</button>
+                    <button class="quick-action-btn">📅 Demander un RDV</button>
+                    <button class="quick-action-btn">❓ Poser une question</button>
+                    <button class="quick-action-btn">📊 Voir mes notes</button>
+                </div>
+
+                <div class="chat-input-container">
+                    <div class="input-wrapper">
+                        <button class="attach-btn">📎</button>
+                        <textarea class="message-input" rows="1" placeholder="Écrivez votre message..."></textarea>
+                        <button class="send-btn">➤</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<script src="{% static 'js/msg_etd.js' %}"></script>
+</body>
+</html>

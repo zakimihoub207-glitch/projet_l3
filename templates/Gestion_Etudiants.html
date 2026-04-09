@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="fr" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Étudiants - Secrétaire</title>
+  
+     <link rel="stylesheet" href="{% static 'css/Gestion_Etudiants.css' %}">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-title">
+                <h1><i class="fas fa-user-graduate"></i> Gestion des Étudiants</h1>
+                <p>Gérez les inscriptions et suivis des étudiants</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn-secondary">
+                    <i class="fas fa-download"></i> Exporter
+                </button>
+                <button class="btn-primary">
+                    <i class="fas fa-plus"></i> Nouvel Étudiant
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-bar">
+            <div class="stat-card">
+                <div class="stat-icon blue">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>142</h3>
+                    <p>Total Étudiants</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green">
+                    <i class="fas fa-user-check"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>128</h3>
+                    <p>Actifs</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon orange">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>8</h3>
+                    <p>En Attente</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon purple">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>6</h3>
+                    <p>Diplômés</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-section">
+            <div class="filters-row">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Rechercher un étudiant par nom, ID ou email...">
+                </div>
+                <select class="filter-select">
+                    <option>Tous les niveaux</option>
+                    <option>A1</option>
+                    <option>A2</option>
+                    <option>B1</option>
+                    <option>B2</option>
+                    <option>C1</option>
+                </select>
+                <select class="filter-select">
+                    <option>Toutes les langues</option>
+                    <option>Anglais</option>
+                    <option>Français</option>
+                    <option>Espagnol</option>
+                    <option>Allemand</option>
+                </select>
+                <select class="filter-select">
+                    <option>Statut paiement</option>
+                    <option>Payé</option>
+                    <option>Partiel</option>
+                    <option>Non payé</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Students Grid -->
+        <div class="students-grid">
+            <!-- Student 1 -->
+            <div class="student-card">
+                <div class="card-header">
+                    <div class="student-main">
+                        <div class="student-avatar">AB</div>
+                        <div class="student-info">
+                            <h3>Ali Benali</h3>
+                            <p>ID: ETU2024001</p>
+                        </div>
+                    </div>
+                    <span class="student-status">Actif</span>
+                </div>
+                <div class="card-body">
+                    <div class="info-row">
+                        <span class="info-label">Langue</span>
+                        <span class="info-value">🇬🇧 Anglais</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Niveau</span>
+                        <span class="info-value">A2 (Intermédiaire)</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Groupe</span>
+                        <span class="info-value">A2-Matin (M. Ahmed)</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Téléphone</span>
+                        <span class="info-value">0550 12 34 56</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Paiement</span>
+                        <span class="payment-status payment-paid">Payé</span>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button class="btn-action btn-edit">
+                        <i class="fas fa-edit"></i> Modifier
+                    </button>
+                    <button class="btn-action btn-view">
+                        <i class="fas fa-eye"></i> Détails
+                    </button>
+                </div>
+            </div>
+
+            <!-- Student 2 -->
+            <div class="student-card">
+                <div class="card-header" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                    <div class="student-main">
+                        <div class="student-avatar">SK</div>
+                        <div class="student-info">
+                            <h3>Sara Kadiri</h3>
+                            <p>ID: ETU2024002</p>
+                        </div>
+                    </div>
+                    <span class="student-status">Actif</span>
+                </div>
+                <div class="card-body">
+                    <div class="info-row">
+                        <span class="info-label">Langue</span>
+                        <span class="info-value">🇫🇷 Français</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Niveau</span>
+                        <span class="info-value">B1 (Avancé)</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Groupe</span>
+                        <span class="info-value">B1-Soir (Mme. Marie)</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Téléphone</span>
+                        <span class="info-value">0661 23 45 67</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Paiement</span>
+                        <span class="payment-status payment-partial">Partiel</span>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button class="btn-action btn-edit">
+                        <i class="fas fa-edit"></i> Modifier
+                    </button>
+                    <button class="btn-action btn-view">
+                        <i class="fas fa-eye"></i> Détails
+                    </button>
+                </div>
+            </div>
+
+            <!-- Student 3 -->
+            <div class="student-card">
+                <div class="card-header" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                    <div class="student-main">
+                        <div class="student-avatar">ML</div>
+                        <div class="student-info">
+                            <h3>Mohamed Lamine</h3>
+                            <p>ID: ETU2024003</p>
+                        </div>
+                    </div>
+                    <span class="student-status">Alerte</span>
+                </div>
+                <div class="card-body">
+                    <div class="info-row">
+                        <span class="info-label">Langue</span>
+                        <span class="info-value">🇬🇧 Anglais</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Niveau</span>
+                        <span class="info-value">A1 (Débutant)</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Groupe</span>
+                        <span class="info-value">A1-Weekend (M. Karim)</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Téléphone</span>
+                        <span class="info-value">0772 34 56 78</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Paiement</span>
+                        <span class="payment-status payment-unpaid">Non payé</span>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button class="btn-action btn-edit">
+                        <i class="fas fa-edit"></i> Modifier
+                    </button>
+                    <button class="btn-action btn-view">
+                        <i class="fas fa-eye"></i> Détails
+                    </button>
+                </div>
+            </div>
+
+            <!-- Student 4 -->
+            <div class="student-card">
+                <div class="card-header" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+                    <div class="student-main">
+                        <div class="student-avatar">NR</div>
+                        <div class="student-info">
+                            <h3>Nadia Rahmouni</h3>
+                            <p>ID: ETU2024004</p>
+                        </div>
+                    </div>
+                    <span class="student-status">Actif</span>
+                </div>
+                <div class="card-body">
+                    <div class="info-row">
+                        <span class="info-label">Langue</span>
+                        <span class="info-value">🇩🇪 Allemand</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Niveau</span>
+                        <span class="info-value">B2 (Confirmé)</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Groupe</span>
+                        <span class="info-value">B2-Soir (M. Thomas)</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Téléphone</span>
+                        <span class="info-value">0555 45 67 89</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Paiement</span>
+                        <span class="payment-status payment-paid">Payé</span>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button class="btn-action btn-edit">
+                        <i class="fas fa-edit"></i> Modifier
+                    </button>
+                    <button class="btn-action btn-view">
+                        <i class="fas fa-eye"></i> Détails
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+ <script src="{% static 'js/Gestion_Etd.js' %}"></script>
+</body>
+</html>

@@ -1,338 +1,645 @@
-// absences.js - Attendance Management System
+/**
+ * Gestion des Absences - Enseignant
+ * JWT Authentication + Django REST API
+ * File: static/js/absences.js
+ */
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Helper to get JWT token
-    function getAuthToken() {
-        return localStorage.getItem('access_token') || sessionStorage.getItem('access_token') || null;
-    }
+// ============================================================
+// CONFIG
+// ============================================================
+const API_URL = '/api';
 
-    // State management
-    const state = {
-        students: [],
-        attendance: {},
-        sessionId: null,
-        groupeId: null,
-        apiBaseUrl: '/api',
-        authToken: getAuthToken(),
-        stats: {
-            present: 0,
-            absent: 0,
-            late: 0,
-            justified: 0
-        }
-    };
+// État global de la page
+const state = {
+    etudiants:    [],      // liste des étudiants du groupe
+    seance:       null,    // séance du jour
+    groupe:       null,    // groupe actuel
+    absences:     {},      // { etudiantId: 'Present' | 'Absent' | 'Retard' | 'Justifie' }
+    savedIds:     {},      // { etudiantId: absenceId } — IDs déjà sauvegardés en DB
+    saving:       false,
+};
 
-    // DOM Elements
-    const elements = {
-        studentList: document.getElementById('studentList'),
-        alertContainer: document.getElementById('alertContainer'),
-        totalStudents: document.getElementById('totalStudents'),
-        groupName: document.getElementById('groupName'),
-        sessionDetails: document.getElementById('sessionDetails'),
-        currentDay: document.getElementById('currentDay'),
-        currentMonth: document.getElementById('currentMonth'),
-        currentWeekday: document.getElementById('currentWeekday'),
-        currentWeek: document.getElementById('currentWeek'),
-        statCards: document.querySelectorAll('.stat-card')
-    };
+// ============================================================
+// JWT HELPERS
+// ============================================================
+function getToken() {
+    return localStorage.getItem('access_token') || sessionStorage.getItem('access_token') || null;
+}
 
-    // Initialize
-    init();
+function getUser() {
+    try {
+        return JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user'));
+    } catch { return null; }
+}
 
-    function init() {
-        if (!state.authToken) {
-            showNotification('❌ Veuillez vous connecter', 'error');
-            setTimeout(() => window.location.href = '/login/', 2000);
-            return;
-        }
+function authHeaders() {
+    const token = getToken();
+    const h = { 'Content-Type': 'application/json' };
+    if (token) h['Authorization'] = `Bearer ${token}`;
+    return h;
+}
 
-        setCurrentDate();
-        loadSessionData();
-        setupEventListeners();
-    }
-
-    // Set current date
-    function setCurrentDate() {
-        const now = new Date();
-        const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
-        const months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
-
-        elements.currentDay.textContent = now.getDate();
-        elements.currentMonth.textContent = months[now.getMonth()];
-        elements.currentWeekday.textContent = days[now.getDay()];
-
-        // Calculate week number
-        const start = new Date(now.getFullYear(), 0, 1);
-        const diff = now - start + ((start.getDay() + 1) * 86400000);
-        const week = Math.ceil(diff / 604800000);
-        elements.currentWeek.textContent = `Semaine ${week}`;
-    }
-
-    // Load session data from URL or API
-    async function loadSessionData() {
-        // Get groupe_id from URL params
-        const urlParams = new URLSearchParams(window.location.search);
-        state.groupeId = urlParams.get('groupe') || 1;
-
-        try {
-            // Load groupe details
-            const groupeRes = await fetch(`${state.apiBaseUrl}/groupes/${state.groupeId}/`, {
-                headers: { 'Authorization': `Bearer ${state.authToken}` }
-            });
-
-            if (!groupeRes.ok) throw new Error('Failed to load group');
-
-            const groupe = await groupeRes.json();
-            elements.groupName.textContent = `${groupe.nom_groupe} - ${groupe.niveau}`;
-            elements.sessionDetails.textContent = `Salle ${groupe.salle || 'TBD'} • ${groupe.planning || 'Horaire non défini'}`;
-
-            // Load students for this groupe
-            await loadStudents(state.groupeId);
-
-        } catch (error) {
-            console.error('Error loading session:', error);
-            showNotification('⚠️ Mode hors ligne', 'warning');
-            loadStaticData();
-        }
-    }
-
-    // Load students from API
-    async function loadStudents(groupeId) {
-        try {
-            const response = await fetch(`${state.apiBaseUrl}/etudiants/?groupe=${groupeId}`, {
-                headers: { 'Authorization': `Bearer ${state.authToken}` }
-            });
-
-            if (!response.ok) throw new Error('Failed to load students');
-
-            const data = await response.json();
-            state.students = Array.isArray(data) ? data : (data.results || []);
-
-            // Load existing absences for today
-            await loadTodayAbsences(groupeId);
-
-            renderStudents();
-            updateStats();
-
-        } catch (error) {
-            console.error('Error loading students:', error);
-            loadStaticData();
-        }
-    }
-
-    // Load today's absences
-    async function loadTodayAbsences(groupeId) {
-        const today = new Date().toISOString().split('T')[0];
-        try {
-            const response = await fetch(`${state.apiBaseUrl}/absences/?groupe=${groupeId}&date=${today}`, {
-                headers: { 'Authorization': `Bearer ${state.authToken}` }
-            });
-
-            if (response.ok) {
-                const absences = await response.json();
-                // Build attendance state from existing absences
-                absences.forEach(abs => {
-                    state.attendance[abs.etudiant] = abs.statut_absence.toLowerCase();
-                });
-            }
-        } catch (error) {
-            console.log('No existing absences found');
-        }
-    }
-
-    // Render students list
-    function renderStudents() {
-        elements.totalStudents.textContent = state.students.length;
-
-        if (state.students.length === 0) {
-            elements.studentList.innerHTML = '<p style="text-align: center; padding: 2rem; color: #64748b;">Aucun étudiant trouvé</p>';
-            return;
-        }
-
-        elements.studentList.innerHTML = state.students.map((student, index) => {
-            const initials = getInitials(student.user?.first_name + ' ' + student.user?.last_name);
-            const absenceCount = student.absences_count || 0;
-            const absenceClass = absenceCount >= 3 ? 'danger' : (absenceCount >= 2 ? 'warning' : '');
-            const currentStatus = state.attendance[student.id] || 'present';
-
-            return `
-                <div class="student-item ${absenceClass}" data-id="${student.id}" data-absences="${absenceCount}">
-                    <div class="student-number">${String(index + 1).padStart(2, '0')}</div>
-                    <div class="student-avatar">${initials}</div>
-                    <div class="student-info">
-                        <h4>${escapeHtml(student.user?.first_name + ' ' + student.user?.last_name)}</h4>
-                        <p>ID: ${student.id} • Niveau: ${student.niveau_actuel || 'A1'}</p>
-                    </div>
-                    <div class="absence-count ${absenceClass}">
-                        <div>
-                            <span>${absenceCount}</span>
-                            <label>Absence${absenceCount > 1 ? 's' : ''}</label>
-                        </div>
-                    </div>
-                    <div class="status-selector">
-                        <label class="status-option">
-                            <input type="radio" name="student-${student.id}" value="present"
-                                ${currentStatus === 'present' ? 'checked' : ''}
-                                onchange="updateAttendance(${student.id}, 'present')">
-                            <span class="status-label present">✅ Présent</span>
-                        </label>
-                        <label class="status-option">
-                            <input type="radio" name="student-${student.id}" value="absent"
-                                ${currentStatus === 'absent' ? 'checked' : ''}
-                                onchange="updateAttendance(${student.id}, 'absent')">
-                            <span class="status-label absent">❌ Absent</span>
-                        </label>
-                        <label class="status-option">
-                            <input type="radio" name="student-${student.id}" value="late"
-                                ${currentStatus === 'late' ? 'checked' : ''}
-                                onchange="updateAttendance(${student.id}, 'late')">
-                            <span class="status-label late">⏰ Retard</span>
-                        </label>
-                        <label class="status-option">
-                            <input type="radio" name="student-${student.id}" value="justified"
-                                ${currentStatus === 'justified' ? 'checked' : ''}
-                                onchange="updateAttendance(${student.id}, 'justified')">
-                            <span class="status-label justified">📝 Justifié</span>
-                        </label>
-                    </div>
-                </div>
-            `;
-        }).join('');
-
-        checkAlerts();
-    }
-
-    // Update attendance state
-    window.updateAttendance = function(studentId, status) {
-        state.attendance[studentId] = status;
-        updateStats();
-
-        // Visual feedback
-        const row = document.querySelector(`.student-item[data-id="${studentId}"]`);
-        if (row) {
-            row.style.animation = 'none';
-            setTimeout(() => {
-                row.style.animation = 'pulse 0.5s';
-            }, 10);
-        }
-    };
-
-    // Update statistics
-    function updateStats() {
-        const counts = { present: 0, absent: 0, late: 0, justified: 0 };
-
-        Object.values(state.attendance).forEach(status => {
-            if (counts[status] !== undefined) counts[status]++;
+// ============================================================
+// API GÉNÉRIQUE
+// ============================================================
+async function apiFetch(endpoint, options = {}) {
+    try {
+        const res = await fetch(`${API_URL}${endpoint}`, {
+            ...options,
+            headers: { ...authHeaders(), ...options.headers },
         });
 
-        // Default to present for unset students
-        const unsetCount = state.students.length - Object.keys(state.attendance).length;
-        counts.present += unsetCount;
+        if (res.status === 401) return { error: 'JWT_INVALID',    message: 'Token invalide.' };
+        if (res.status === 403) return { error: 'FORBIDDEN',      message: 'Accès refusé.' };
+        if (!res.ok)            return { error: 'API_ERROR',       message: `Erreur ${res.status}` };
 
-        state.stats = counts;
+        // 204 No Content
+        if (res.status === 204) return { success: true };
 
-        // Update UI
-        document.querySelector('.present-count').textContent = counts.present;
-        document.querySelector('.absent-count').textContent = counts.absent;
-        document.querySelector('.late-count').textContent = counts.late;
-        document.querySelector('.justified-count').textContent = counts.justified;
+        const ct = res.headers.get('content-type');
+        return ct?.includes('application/json') ? await res.json() : await res.text();
 
-        // Update stat card highlights
-        elements.statCards.forEach(card => {
-            card.classList.remove('active');
-        });
+    } catch (e) {
+        console.error('Network error:', e);
+        return { error: 'NETWORK_ERROR', message: 'Serveur inaccessible.' };
+    }
+}
+
+// ============================================================
+// VÉRIFIER SESSION
+// ============================================================
+function checkSession() {
+    const token = getToken();
+    const user  = getUser();
+    if (!token || !user) { window.location.href = '/login/'; return null; }
+    if (!['Enseignant', 'Dirigeant'].includes(user.role)) { window.location.href = '/login/'; return null; }
+    return user;
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+function showToast(message, type = 'info') {
+    document.querySelector('.toast-abs')?.remove();
+    const colors = { success: '#059669', error: '#dc2626', warning: '#d97706', info: '#0284c7' };
+    const icons  = { success: '✓', error: '✕', warning: '⚠', info: 'ℹ' };
+
+    const t = document.createElement('div');
+    t.className = 'toast-abs';
+    t.style.cssText = `
+        position:fixed; bottom:24px; right:24px; z-index:9999;
+        padding:14px 22px; border-radius:12px;
+        background:${colors[type] || colors.info}; color:white;
+        font-weight:500; font-size:0.9rem;
+        box-shadow:0 8px 24px rgba(0,0,0,0.2);
+        display:flex; align-items:center; gap:8px;
+        transform:translateX(120%); opacity:0;
+        transition:all 0.3s ease;
+    `;
+    t.innerHTML = `<span>${icons[type]}</span>${message}`;
+    document.body.appendChild(t);
+    requestAnimationFrame(() => { t.style.transform = 'translateX(0)'; t.style.opacity = '1'; });
+    setTimeout(() => {
+        t.style.transform = 'translateX(120%)'; t.style.opacity = '0';
+        setTimeout(() => t.remove(), 300);
+    }, 3500);
+}
+
+// ============================================================
+// ALERT CONTAINER (alertes importantes sur la page)
+// ============================================================
+function showAlert(message, type = 'warning') {
+    const container = document.getElementById('alertContainer');
+    if (!container) return;
+    const colors = { warning: '#fef3c7', error: '#fee2e2', success: '#d1fae5', info: '#dbeafe' };
+    const textColors = { warning: '#92400e', error: '#991b1b', success: '#065f46', info: '#1e40af' };
+
+    const alert = document.createElement('div');
+    alert.style.cssText = `
+        margin-top: 1rem; padding: 1rem 1.25rem; border-radius: 12px;
+        background: ${colors[type]}; color: ${textColors[type]};
+        font-weight: 500; display: flex; align-items: center; gap: 0.75rem;
+        animation: fadeInDown 0.3s ease;
+    `;
+    alert.innerHTML = `
+        <span style="font-size:1.2rem;">${type === 'warning' ? '⚠️' : type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️'}</span>
+        <span>${message}</span>
+        <button onclick="this.parentElement.remove()"
+                style="margin-left:auto; background:none; border:none; cursor:pointer;
+                       font-size:1.1rem; color:${textColors[type]};">×</button>
+    `;
+    container.appendChild(alert);
+    setTimeout(() => alert.remove(), 6000);
+}
+
+// ============================================================
+// DATE — Remplir les infos date du jour
+// ============================================================
+function fillDateInfo() {
+    const now   = new Date();
+    const jours = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+    const mois  = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
+
+    const day     = document.getElementById('currentDay');
+    const month   = document.getElementById('currentMonth');
+    const weekday = document.getElementById('currentWeekday');
+    const week    = document.getElementById('currentWeek');
+
+    if (day)     day.textContent     = now.getDate();
+    if (month)   month.textContent   = mois[now.getMonth()];
+    if (weekday) weekday.textContent = jours[now.getDay()];
+
+    // Numéro de semaine
+    const startOfYear = new Date(now.getFullYear(), 0, 1);
+    const weekNum = Math.ceil(((now - startOfYear) / 86400000 + startOfYear.getDay() + 1) / 7);
+    if (week) week.textContent = `Semaine ${weekNum}`;
+}
+
+// ============================================================
+// CHARGER GROUPE + SÉANCE DU JOUR
+// ============================================================
+async function loadGroupeAndSeance() {
+    // Récupérer le groupe depuis l'URL ou le premier groupe de l'enseignant
+    const urlParams = new URLSearchParams(window.location.search);
+    const groupeId  = urlParams.get('groupe');
+
+    // Charger les groupes de l'enseignant
+    const groupes = await apiFetch('/groupes/?statut=Actif');
+    if (groupes?.error || !groupes.length) {
+        document.getElementById('groupName').textContent   = 'Aucun groupe actif';
+        document.getElementById('sessionDetails').textContent = 'Assignez un groupe d\'abord';
+        showAlert('Vous n\'avez aucun groupe actif assigné.', 'warning');
+        return;
     }
 
-    // Check for alerts (students with 3+ absences)
-    function checkAlerts() {
-        const alerts = state.students.filter(s => (s.absences_count || 0) >= 3);
+    // Prendre le groupe de l'URL ou le premier
+    state.groupe = groupeId
+        ? groupes.find(g => g.id == groupeId) || groupes[0]
+        : groupes[0];
 
-        if (alerts.length > 0) {
-            const names = alerts.map(s => `${s.user?.first_name} ${s.user?.last_name}`).join(', ');
-            elements.alertContainer.innerHTML = `
-                <div class="alert-box">
-                    <div class="alert-icon">⚠️</div>
-                    <div class="alert-content">
-                        <h3>Alerte de Dépassement</h3>
-                        <p><strong>${names}</strong> ${alerts.length > 1 ? 'ont' : 'a'} dépassé 3 absences.
-                        Une notification automatique a été envoyée aux parents et au dirigeant.</p>
+    document.getElementById('groupName').textContent = state.groupe.nom_groupe;
+
+    // Chercher la séance du jour
+    const today   = new Date().toISOString().split('T')[0];
+    const seances = await apiFetch(`/seances/?groupe=${state.groupe.id}`);
+
+    if (!seances?.error && seances.length) {
+        state.seance = seances.find(s => s.date_seance === today) || seances[0];
+        document.getElementById('sessionDetails').textContent =
+            `${state.seance.heure_debut?.slice(0, 5)} → ${state.seance.heure_fin?.slice(0, 5)} • Salle ${state.seance.salle}`;
+    } else {
+        document.getElementById('sessionDetails').textContent = 'Aucune séance trouvée pour aujourd\'hui';
+        showAlert('Aucune séance enregistrée pour aujourd\'hui. Vous pouvez quand même saisir les absences.', 'info');
+    }
+
+    // Charger les étudiants du groupe
+    await loadEtudiants();
+}
+
+// ============================================================
+// CHARGER ÉTUDIANTS
+// ============================================================
+async function loadEtudiants() {
+    const list = document.getElementById('studentList');
+    list.innerHTML = `
+        <div style="text-align:center; padding:3rem;">
+            <div style="width:50px; height:50px; border:4px solid #e2e8f0;
+                        border-top-color:#667eea; border-radius:50%;
+                        animation:spin 1s linear infinite; margin:0 auto 1rem;"></div>
+            <p style="color:#64748b;">Chargement des étudiants...</p>
+        </div>`;
+
+    const data = await apiFetch(`/etudiants/?groupe=${state.groupe.id}`);
+
+    if (data?.error) {
+        list.innerHTML = `
+            <div style="text-align:center; padding:3rem; color:#dc2626;">
+                <div style="font-size:2rem; margin-bottom:0.5rem;">⚠️</div>
+                <p>${data.message}</p>
+                <button onclick="loadEtudiants()"
+                        style="margin-top:1rem; padding:8px 16px; background:#667eea;
+                               color:white; border:none; border-radius:8px; cursor:pointer;">
+                    Réessayer
+                </button>
+            </div>`;
+        return;
+    }
+
+    state.etudiants = data;
+    document.getElementById('totalStudents').textContent = data.length;
+
+    // Tous présents par défaut
+    data.forEach(e => { state.absences[e.id] = 'Present'; });
+
+    // Charger les absences déjà saisies si séance existe
+    if (state.seance) {
+        await loadExistingAbsences();
+    }
+
+    renderStudentList();
+    updateStats();
+}
+
+// ============================================================
+// CHARGER ABSENCES DÉJÀ SAUVEGARDÉES EN DB
+// ============================================================
+async function loadExistingAbsences() {
+    const data = await apiFetch(`/absences/?seance=${state.seance.id}`);
+    if (data?.error || !data.length) return;
+
+    data.forEach(abs => {
+        state.absences[abs.etudiant] = abs.statut_absence;
+        state.savedIds[abs.etudiant] = abs.id; // garder l'ID pour les PUT
+    });
+}
+
+// ============================================================
+// RENDU DE LA LISTE DES ÉTUDIANTS
+// ============================================================
+function renderStudentList() {
+    const list = document.getElementById('studentList');
+
+    if (!state.etudiants.length) {
+        list.innerHTML = `
+            <div style="text-align:center; padding:3rem; color:#64748b;">
+                <div style="font-size:2.5rem; margin-bottom:0.5rem;">👥</div>
+                <p>Aucun étudiant dans ce groupe.</p>
+            </div>`;
+        return;
+    }
+
+    list.innerHTML = state.etudiants.map((e, index) => {
+        const nom      = e.user?.nom_complet || `${e.user?.first_name || ''} ${e.user?.last_name || ''}`.trim();
+        const initials = nom.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+        const statut   = state.absences[e.id] || 'Present';
+
+        return `
+            <div class="student-item" id="student-${e.id}" data-student="${e.id}">
+                <div class="student-info">
+                    <div class="student-avatar" style="
+                        width:50px; height:50px; border-radius:50%;
+                        background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        display:flex; align-items:center; justify-content:center;
+                        color:white; font-weight:700; font-size:1rem; flex-shrink:0;">
+                        ${initials}
+                    </div>
+                    <div>
+                        <h4 style="font-size:0.95rem; font-weight:600; color:#1e293b; margin-bottom:4px;">
+                            ${nom}
+                        </h4>
+                        <span style="font-size:0.8rem; color:#64748b;">
+                            Niveau ${e.niveau_actuel} • ${e.taux_assiduité ?? 100}% assiduité
+                        </span>
                     </div>
                 </div>
-            `;
+
+                <div class="attendance-buttons" style="display:flex; gap:8px; flex-wrap:wrap;">
+                    ${renderButtons(e.id, statut)}
+                </div>
+            </div>`;
+    }).join('');
+
+    // Appliquer style visuel sur la ligne selon statut
+    state.etudiants.forEach(e => applyRowStyle(e.id, state.absences[e.id]));
+}
+
+// ============================================================
+// RENDU DES BOUTONS DE STATUT
+// ============================================================
+function renderButtons(etudiantId, statut) {
+    const btns = [
+        { val: 'Present',  label: '✅ Présent',  active: '#059669', text: 'white' },
+        { val: 'Absent',   label: '❌ Absent',   active: '#dc2626', text: 'white' },
+        { val: 'Retard',   label: '⏰ Retard',   active: '#d97706', text: 'white' },
+        { val: 'Justifie', label: '📝 Justifié', active: '#2563eb', text: 'white' },
+    ];
+
+    return btns.map(b => {
+        const isActive = statut === b.val;
+        return `
+            <button
+                onclick="setStatut(${etudiantId}, '${b.val}')"
+                style="
+                    padding: 8px 14px; border-radius: 8px; border: 2px solid ${b.active};
+                    background: ${isActive ? b.active : 'white'};
+                    color: ${isActive ? b.text : b.active};
+                    font-size: 0.8rem; font-weight: 600; cursor: pointer;
+                    transition: all 0.2s ease; white-space: nowrap;
+                "
+                onmouseover="if('${statut}'!=='${b.val}')this.style.background='${b.active}20'"
+                onmouseout="if('${statut}'!=='${b.val}')this.style.background='white'"
+            >
+                ${b.label}
+            </button>`;
+    }).join('');
+}
+
+// ============================================================
+// CHANGER STATUT D'UN ÉTUDIANT
+// ============================================================
+function setStatut(etudiantId, statut) {
+    state.absences[etudiantId] = statut;
+
+    // Re-render les boutons de cet étudiant uniquement
+    const row = document.getElementById(`student-${etudiantId}`);
+    if (row) {
+        row.querySelector('.attendance-buttons').innerHTML = renderButtons(etudiantId, statut);
+        applyRowStyle(etudiantId, statut);
+    }
+
+    // Vérifier alerte si > seuil absences
+    checkAbsenceAlert(etudiantId);
+
+    updateStats();
+}
+
+// ============================================================
+// STYLE VISUEL DE LA LIGNE SELON STATUT
+// ============================================================
+function applyRowStyle(etudiantId, statut) {
+    const row = document.getElementById(`student-${etudiantId}`);
+    if (!row) return;
+
+    const borders = {
+        'Present':  '#059669',
+        'Absent':   '#dc2626',
+        'Retard':   '#d97706',
+        'Justifie': '#2563eb',
+    };
+    const bgs = {
+        'Present':  '#f0fdf4',
+        'Absent':   '#fef2f2',
+        'Retard':   '#fffbeb',
+        'Justifie': '#eff6ff',
+    };
+
+    row.style.borderLeft   = `4px solid ${borders[statut] || '#e2e8f0'}`;
+    row.style.background   = bgs[statut] || 'white';
+    row.style.borderRadius = '12px';
+    row.style.marginBottom = '10px';
+    row.style.padding      = '1rem 1.25rem';
+    row.style.display      = 'flex';
+    row.style.alignItems   = 'center';
+    row.style.justifyContent = 'space-between';
+    row.style.transition   = 'all 0.2s ease';
+}
+
+// ============================================================
+// VÉRIFIER SI ÉTUDIANT A TROP D'ABSENCES
+// ============================================================
+async function checkAbsenceAlert(etudiantId) {
+    if (state.absences[etudiantId] !== 'Absent') return;
+
+    // Compter les absences de cet étudiant
+    const data = await apiFetch(`/absences/?etudiant=${etudiantId}&statut=Absent`);
+    if (data?.error) return;
+
+    const etudiant = state.etudiants.find(e => e.id === etudiantId);
+    const nom      = etudiant?.user?.nom_complet || 'Cet étudiant';
+
+    if (data.length >= 3) {
+        showAlert(
+            `⚠️ <strong>${nom}</strong> a ${data.length} absences enregistrées. Une alerte a été envoyée aux parents et au dirigeant.`,
+            'warning'
+        );
+    }
+}
+
+// ============================================================
+// METTRE À JOUR LES COMPTEURS STATS
+// ============================================================
+function updateStats() {
+    const counts = { Present: 0, Absent: 0, Retard: 0, Justifie: 0 };
+    Object.values(state.absences).forEach(s => { if (counts[s] !== undefined) counts[s]++; });
+
+    const el = (cls) => document.querySelector(`.${cls}`);
+    if (el('present-count'))   el('present-count').textContent   = counts.Present;
+    if (el('absent-count'))    el('absent-count').textContent    = counts.Absent;
+    if (el('late-count'))      el('late-count').textContent      = counts.Retard;
+    if (el('justified-count')) el('justified-count').textContent = counts.Justifie;
+}
+
+// ============================================================
+// ENREGISTRER LES ABSENCES EN DB
+// ============================================================
+async function saveAttendance() {
+    if (state.saving) return;
+    if (!state.seance) {
+        showToast('Aucune séance trouvée pour aujourd\'hui. Créez une séance d\'abord.', 'warning');
+        return;
+    }
+    if (!state.etudiants.length) {
+        showToast('Aucun étudiant à enregistrer.', 'warning');
+        return;
+    }
+
+    state.saving = true;
+    const btn = document.querySelector('.btn-save');
+    if (btn) {
+        btn.textContent = '⏳ Enregistrement...';
+        btn.disabled    = true;
+    }
+
+    const today  = new Date().toISOString().split('T')[0];
+    let success  = 0;
+    let errors   = 0;
+
+    for (const etudiant of state.etudiants) {
+        const statut    = state.absences[etudiant.id] || 'Present';
+        const absenceId = state.savedIds[etudiant.id];
+
+        const payload = {
+            etudiant:       etudiant.id,
+            seance:         state.seance.id,
+            statut_absence: statut,
+            date_absence:   today,
+        };
+
+        let result;
+
+        if (absenceId) {
+            // Déjà sauvegardé → PUT pour mettre à jour
+            result = await apiFetch(`/absences/${absenceId}/`, {
+                method: 'PUT',
+                body:   JSON.stringify(payload),
+            });
         } else {
-            elements.alertContainer.innerHTML = '';
-        }
-    }
-
-    // Save attendance to API
-    window.saveAttendance = async function() {
-        const btn = document.querySelector('.btn-save');
-        btn.innerHTML = '💾 Enregistrement...';
-        btn.disabled = true;
-
-        try {
-            const today = new Date().toISOString().split('T')[0];
-            const promises = [];
-
-            for (const [studentId, status] of Object.entries(state.attendance)) {
-                const payload = {
-                    etudiant: parseInt(studentId),
-                    date_absence: today,
-                    statut_absence: status.charAt(0).toUpperCase() + status.slice(1),
-                    seance: state.sessionId
-                };
-
-                promises.push(
-                    fetch(`${state.apiBaseUrl}/absences/`, {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${state.authToken}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(payload)
-                    })
-                );
-            }
-
-            await Promise.all(promises);
-            showNotification('✅ Présences enregistrées avec succès', 'success');
-
-        } catch (error) {
-            console.error('Error saving attendance:', error);
-            showNotification('❌ Erreur lors de l\'enregistrement', 'error');
-        } finally {
-            btn.innerHTML = '💾 Enregistrer';
-            btn.disabled = false;
-        }
-    };
-
-    // Generate PDF report
-    window.generatePDF = function() {
-        showNotification('📄 Génération du PDF...', 'info');
-
-        // Trigger print dialog (styled for printing)
-        setTimeout(() => {
-            window.print();
-        }, 500);
-    };
-
-    // Setup event listeners
-    function setupEventListeners() {
-        // Stat card clicks for quick filtering
-        elements.statCards.forEach((card, index) => {
-            card.addEventListener('click', () => {
-                const statuses = ['present', 'absent', 'late', 'justified'];
-                filterByStatus(statuses[index]);
+            // Nouveau → POST
+            result = await apiFetch('/absences/', {
+                method: 'POST',
+                body:   JSON.stringify(payload),
             });
-        });
+            if (!result?.error) {
+                state.savedIds[etudiant.id] = result.id; // stocker l'ID pour les prochains PUT
+            }
+        }
+
+        if (result?.error) {
+            console.error(`Erreur pour étudiant ${etudiant.id}:`, result.message);
+            errors++;
+        } else {
+            success++;
+        }
     }
 
-    // Filter students by status
-    function filterByStatus(status) {
-        const rows = document.querySelectorAll('.student-item');
-        rows.forEach(row => {
-            const studentId = row.dataset.id;
-            const currentStatus = state.attendance[studentId] || 'present';
+    state.saving = false;
+    if (btn) {
+        btn.textContent = '💾 Enregistrer';
+        btn.disabled    = false;
+    }
 
-            if (currentStatus === status) {
-                row.style.display =
+    if (errors === 0) {
+        showToast(`✓ ${success} présences enregistrées avec succès !`, 'success');
+    } else {
+        showToast(`${success} enregistrés, ${errors} erreurs.`, 'warning');
+    }
+}
+
+// ============================================================
+// GÉNÉRER RAPPORT PDF
+// ============================================================
+function generatePDF() {
+    if (!state.etudiants.length) {
+        showToast('Aucune donnée à exporter.', 'warning');
+        return;
+    }
+
+    const today    = new Date().toLocaleDateString('fr-DZ');
+    const groupe   = state.groupe?.nom_groupe || 'Groupe';
+    const seance   = state.seance
+        ? `${state.seance.heure_debut?.slice(0,5)} → ${state.seance.heure_fin?.slice(0,5)}`
+        : 'Séance du jour';
+
+    const rows = state.etudiants.map(e => {
+        const nom    = e.user?.nom_complet || `${e.user?.first_name || ''} ${e.user?.last_name || ''}`.trim();
+        const statut = state.absences[e.id] || 'Present';
+        const icons  = { Present: '✅', Absent: '❌', Retard: '⏰', Justifie: '📝' };
+        return `
+            <tr>
+                <td>${nom}</td>
+                <td>Niveau ${e.niveau_actuel}</td>
+                <td style="text-align:center;">${icons[statut] || '—'} ${statut}</td>
+            </tr>`;
+    }).join('');
+
+    const counts = { Present: 0, Absent: 0, Retard: 0, Justifie: 0 };
+    Object.values(state.absences).forEach(s => { if (counts[s] !== undefined) counts[s]++; });
+
+    const html = `
+        <!DOCTYPE html>
+        <html lang="fr">
+        <head>
+            <meta charset="UTF-8">
+            <title>Rapport Absences - ${groupe} - ${today}</title>
+            <style>
+                body    { font-family: 'Segoe UI', sans-serif; padding: 2rem; color: #1e293b; }
+                h1      { font-size: 1.5rem; color: #667eea; margin-bottom: 0.25rem; }
+                p       { color: #64748b; font-size: 0.9rem; margin-bottom: 1.5rem; }
+                table   { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+                th      { background: #667eea; color: white; padding: 10px 14px; text-align: left; font-size: 0.875rem; }
+                td      { padding: 10px 14px; border-bottom: 1px solid #e2e8f0; font-size: 0.875rem; }
+                tr:nth-child(even) td { background: #f8fafc; }
+                .summary { display:flex; gap:1.5rem; margin-bottom:1.5rem; }
+                .sum-item { padding:10px 16px; border-radius:8px; font-weight:700; font-size:0.875rem; }
+                .s-p { background:#d1fae5; color:#065f46; }
+                .s-a { background:#fee2e2; color:#991b1b; }
+                .s-r { background:#fef3c7; color:#92400e; }
+                .s-j { background:#dbeafe; color:#1e40af; }
+                @media print { button { display:none !important; } }
+            </style>
+        </head>
+        <body>
+            <h1>📅 Feuille de Présence — ${groupe}</h1>
+            <p>${seance} • ${today}</p>
+            <div class="summary">
+                <div class="sum-item s-p">✅ Présents: ${counts.Present}</div>
+                <div class="sum-item s-a">❌ Absents: ${counts.Absent}</div>
+                <div class="sum-item s-r">⏰ Retards: ${counts.Retard}</div>
+                <div class="sum-item s-j">📝 Justifiés: ${counts.Justifie}</div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nom complet</th>
+                        <th>Niveau</th>
+                        <th style="text-align:center;">Statut</th>
+                    </tr>
+                </thead>
+                <tbody>${rows}</tbody>
+            </table>
+            <div style="margin-top:2rem; border-top:1px solid #e2e8f0; padding-top:1rem; color:#94a3b8; font-size:0.8rem;">
+                Généré le ${today} • Centre de Langues
+            </div>
+            <script>window.onload = () => window.print();<\/script>
+        </body>
+        </html>`;
+
+    const win = window.open('', '_blank');
+    if (win) {
+        win.document.write(html);
+        win.document.close();
+    } else {
+        showToast('Activez les popups pour générer le PDF.', 'warning');
+    }
+}
+
+// ============================================================
+// MARQUER TOUS (raccourcis)
+// ============================================================
+function markAll(statut) {
+    state.etudiants.forEach(e => setStatut(e.id, statut));
+    showToast(`Tous marqués comme ${statut}`, 'info');
+}
+
+// ============================================================
+// CSS ANIMATIONS MANQUANTES
+// ============================================================
+(function injectStyles() {
+    if (document.getElementById('abs-extra-styles')) return;
+    const style = document.createElement('style');
+    style.id = 'abs-extra-styles';
+    style.textContent = `
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .student-item {
+            border-left: 4px solid #e2e8f0;
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            padding: 1rem 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.2s ease;
+        }
+        .student-item .student-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        @media (max-width: 640px) {
+            .student-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.75rem;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+})();
+
+// ============================================================
+// INIT
+// ============================================================
+document.addEventListener('DOMContentLoaded', async () => {
+    const user = checkSession();
+    if (!user) return;
+
+    fillDateInfo();
+    await loadGroupeAndSeance();
+});

@@ -138,7 +138,7 @@ def acces_refuse_view(request):
 # SECRÉTARIAT
 # ============================================================
 
-@role_required('Secretariat', 'Dirigeant')
+
 def dashboard_secretariat(request):
     """Dashboard principal Secrétariat"""
     return render(request, 'dashboard_secretariat.html', {
@@ -148,10 +148,10 @@ def dashboard_secretariat(request):
     })
 
 
-@role_required('Secretariat', 'Dirigeant')
+
 def etudiants_view(request):
     """Page gestion des étudiants"""
-    return render(request, 'secretariat/etudiants.html', {
+    return render(request, 'Gestion_Etudiants.html', {
         'user': request.user,
         'page': 'etudiants',
     })
@@ -363,10 +363,10 @@ def mes_groupes_view(request):
     })
 
 
-@role_required('Enseignant', 'Dirigeant')
+
 def notes_view(request):
     """Page saisie des notes"""
-    return render(request, 'enseignant/notes.html', {
+    return render(request, 'gestion_des_notes.html', {
         'user': request.user,
         'page': 'notes',
     })
@@ -424,7 +424,7 @@ def dashboard_etudiant(request):
 @role_required('Etudiant')
 def mes_notes_view(request):
     """Page mes notes (étudiant)"""
-    return render(request, 'etudiant/mes_notes.html', {
+    return render(request, 'mes_notes.html', {
         'user': request.user,
         'page': 'notes',
     })
@@ -451,9 +451,16 @@ def mon_niveau_view(request):
 @role_required('Etudiant')
 def mes_ressources_view(request):
     """Page mes ressources pédagogiques (étudiant)"""
-    return render(request, 'etudiant/mes_ressources.html', {
+    return render(request, 'mes_ressources.html', {
         'user': request.user,
         'page': 'ressources',
+    })
+
+def messagerie_etudiant_view(request):
+    """Page messagerie parent ↔ enseignant"""
+    return render(request, 'msg_etd.html', {
+        'user': request.user,
+        'page': 'messagerie',
     })
 
 
@@ -987,12 +994,10 @@ class EtudiantDetailView(APIView):
 # ============================================================
 
 class EnseignantListCreateView(APIView):
-    """GET/POST /api/enseignants/"""
-
     def get_permissions(self):
         if self.request.method == 'POST':
             return [IsSecretariatOrDirigeant()]
-        return [IsStaff()]
+        return [IsAuthenticated()]  # ✅ Étudiant peut voir les enseignants
 
     def get(self, request):
         qs = Enseignant.objects.select_related('user').all()
@@ -1373,27 +1378,37 @@ class EvaluationListCreateView(APIView):
 
     def get_permissions(self):
         if self.request.method == 'POST':
-            return [IsEnseignantOrDirigeant()]
-        return [IsAuthenticated()]
+            return [IsEnseignantOrDirigeant()]  # Only teachers can create
+        return [IsAuthenticated()]  # Everyone can view
 
     def get(self, request):
         qs = Evaluation.objects.select_related('groupe').all()
         groupe_id = request.query_params.get('groupe')
         type_eval = request.query_params.get('type')
+
         if groupe_id:
             qs = qs.filter(groupe_id=groupe_id)
         if type_eval:
             qs = qs.filter(type=type_eval)
 
+        # Filter by user role
         if request.user.role == 'Enseignant':
             try:
                 qs = qs.filter(groupe__enseignant=request.user.enseignant_profile)
             except Exception:
                 return Response([])
 
-        if request.user.role == 'Etudiant':
+        elif request.user.role == 'Etudiant':
             try:
                 qs = qs.filter(groupe=request.user.etudiant_profile.groupe)
+            except Exception:
+                return Response([])
+
+        elif request.user.role == 'Parent':
+            try:
+                parent = request.user.parent_profile
+                groupes = Etudiant.objects.filter(parent=parent).values_list('groupe_id', flat=True)
+                qs = qs.filter(groupe_id__in=groupes)
             except Exception:
                 return Response([])
 
@@ -1406,8 +1421,6 @@ class EvaluationListCreateView(APIView):
             log_audit(request, 'CREATE', 'Evaluation', evaluation.pk)
             return Response(EvaluationSerializer(evaluation).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
 class EvaluationDetailView(generics.RetrieveUpdateDestroyAPIView):
     """GET/PUT/DELETE /api/evaluations/<pk>/"""
     queryset = Evaluation.objects.select_related('groupe').all()
@@ -1424,8 +1437,8 @@ class NoteListCreateView(APIView):
 
     def get_permissions(self):
         if self.request.method == 'POST':
-            return [IsEnseignantOrDirigeant()]
-        return [IsAuthenticated()]
+            return [IsEnseignantOrDirigeant()]  # Only teachers can create grades
+        return [IsAuthenticated()]  # Everyone can view their own grades
 
     def get(self, request):
         qs = Note.objects.select_related('etudiant__user', 'evaluation').all()
@@ -1438,13 +1451,14 @@ class NoteListCreateView(APIView):
         if evaluation_id:
             qs = qs.filter(evaluation_id=evaluation_id)
 
+        # Role-based filtering
         if request.user.role == 'Etudiant':
             try:
                 qs = qs.filter(etudiant=request.user.etudiant_profile)
             except Exception:
                 return Response([])
 
-        if request.user.role == 'Parent':
+        elif request.user.role == 'Parent':
             try:
                 parent = request.user.parent_profile
                 etudiants = parent.enfants.all()
@@ -1452,7 +1466,7 @@ class NoteListCreateView(APIView):
             except Exception:
                 return Response([])
 
-        if request.user.role == 'Enseignant':
+        elif request.user.role == 'Enseignant':
             try:
                 qs = qs.filter(
                     evaluation__groupe__enseignant=request.user.enseignant_profile
@@ -1469,7 +1483,6 @@ class NoteListCreateView(APIView):
             log_audit(request, 'CREATE', 'Note', note.pk)
             return Response(NoteSerializer(note).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 class NoteDetailView(generics.RetrieveUpdateDestroyAPIView):
     """GET/PUT/DELETE /api/notes/<pk>/"""
@@ -1638,9 +1651,6 @@ class BulletinDetailView(generics.RetrieveUpdateDestroyAPIView):
 # ============================================================
 @method_decorator(csrf_exempt, name='dispatch')
 class RessourceListCreateView(APIView):
-    """GET/POST /api/ressources/"""
-    parser_classes = [MultiPartParser, FormParser]  # Add this for file uploads
-
     def get_permissions(self):
         if self.request.method == 'POST':
             return [IsEnseignantOrDirigeant()]
@@ -1649,72 +1659,28 @@ class RessourceListCreateView(APIView):
     def get(self, request):
         qs = Ressource.objects.select_related('enseignant__user', 'groupe').all()
 
+        # ✅ Étudiant → seulement les ressources visibles de son groupe
         if request.user.role == 'Etudiant':
             try:
-                qs = qs.filter(
-                    groupe=request.user.etudiant_profile.groupe,
-                    visible_etudiants=True
-                )
+                etudiant = request.user.etudiant_profile
+                qs = qs.filter(visible_etudiants=True)
+                if etudiant.groupe:
+                    qs = qs.filter(
+                        models.Q(groupe=etudiant.groupe) | models.Q(groupe__isnull=True)
+                    )
             except Exception:
-                return Response([])
+                qs = qs.filter(visible_etudiants=True)
 
-        groupe_id = request.query_params.get('groupe')
-        niveau = request.query_params.get('niveau')
+        # Filtres optionnels
+        niveau   = request.query_params.get('niveau')
         type_res = request.query_params.get('type')
+        groupe   = request.query_params.get('groupe')
 
-        if groupe_id:
-            qs = qs.filter(groupe_id=groupe_id)
-        if niveau:
-            qs = qs.filter(niveau=niveau)
-        if type_res:
-            qs = qs.filter(type_ressource=type_res)
+        if niveau:   qs = qs.filter(niveau=niveau)
+        if type_res: qs = qs.filter(type_ressource=type_res)
+        if groupe:   qs = qs.filter(groupe_id=groupe)
 
-        serializer = RessourceSerializer(qs, many=True)
-        return Response(serializer.data)
-
-    def post(self, request):
-        # DEBUG: Print what we're receiving
-        print("=" * 50)
-        print("REQUEST METHOD:", request.method)
-        print("REQUEST FILES:", request.FILES)
-        print("REQUEST DATA:", request.data)
-        print("USER:", request.user)
-        print("USER ROLE:", request.user.role if hasattr(request.user, 'role') else 'N/A')
-
-        try:
-            enseignant = request.user.enseignant_profile
-            print("ENSEIGNANT:", enseignant)
-        except Exception as e:
-            print("ENSEIGNANT ERROR:", str(e))
-            return Response(
-                {'error': 'Vous devez être un enseignant pour uploader des ressources.'},
-                status=status.HTTP_403_FORBIDDEN
-            )
-
-        # IMPORTANT: Pass request in context
-        serializer = RessourceSerializer(
-            data=request.data,
-            context={'request': request}
-        )
-
-        if serializer.is_valid():
-            try:
-                ressource = serializer.save()
-                log_audit(request, 'CREATE', 'Ressource', ressource.pk)
-
-                # Return the created resource
-                result_serializer = RessourceSerializer(ressource)
-                return Response(result_serializer.data, status=status.HTTP_201_CREATED)
-
-            except Exception as e:
-                print("SAVE ERROR:", str(e))
-                return Response(
-                    {'error': f'Erreur lors de la sauvegarde: {str(e)}'},
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
-                )
-
-        print("SERIALIZER ERRORS:", serializer.errors)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(RessourceSerializer(qs, many=True).data)
 class RessourceDetailView(APIView):
     """GET/PUT/PATCH/DELETE /api/ressources/<pk>/"""
     permission_classes = [IsAuthenticated]

@@ -8,6 +8,7 @@ from .models import (
 )
 
 
+
 # ============================================================
 # UTILISATEUR
 # ============================================================
@@ -553,59 +554,25 @@ class BulletinSalaireSerializer(serializers.ModelSerializer):
 # ============================================================
 
 class RessourceSerializer(serializers.ModelSerializer):
-    fichier = serializers.FileField(write_only=True, required=False)
-    enseignant_nom = serializers.CharField(source='enseignant.user.get_full_name', read_only=True)
-    groupe_nom = serializers.CharField(source='groupe.nom_groupe', read_only=True)
+    enseignant_nom = serializers.SerializerMethodField()
+    groupe_nom     = serializers.SerializerMethodField()
 
     class Meta:
         model = Ressource
         fields = [
-            'id', 'titre', 'description', 'type_ressource',
-            'fichier', 'chemin_fichier', 'taille_fichier',
-            'niveau', 'groupe', 'groupe_nom', 'enseignant', 'enseignant_nom',
-            'visible_etudiants', 'date_disponibilite', 'nombre_telechargements',
-            'date_creation', 'date_modification', 'url_lien'
+            'id', 'enseignant', 'enseignant_nom', 'groupe', 'groupe_nom',
+            'titre', 'description', 'type_ressource', 'chemin_fichier',
+            'url_lien', 'taille_fichier', 'niveau', 'visible_etudiants',
+            'date_disponibilite', 'nombre_telechargements', 'date_creation',
+            'date_modification',
         ]
-        read_only_fields = [
-            'enseignant', 'date_creation', 'date_modification',
-            'nombre_telechargements', 'chemin_fichier', 'taille_fichier'
-        ]
+        read_only_fields = ['id', 'nombre_telechargements', 'date_creation']
 
-    def create(self, validated_data):
-        fichier = validated_data.pop('fichier', None)
+    def get_enseignant_nom(self, obj):
+        return obj.enseignant.user.get_full_name()
 
-        # Get enseignant from request context
-        request = self.context.get('request')
-        if not request:
-            raise serializers.ValidationError("Request not available in context")
-
-        try:
-            enseignant = request.user.enseignant_profile
-        except Enseignant.DoesNotExist:
-            raise serializers.ValidationError("L'utilisateur n'est pas un enseignant")
-
-        # Create resource with file
-        ressource_data = {
-            'enseignant': enseignant,
-            'titre': validated_data.get('titre', 'Sans titre'),
-            'description': validated_data.get('description', ''),
-            'type_ressource': validated_data.get('type_ressource', 'PDF'),
-            'visible_etudiants': validated_data.get('visible_etudiants', True),
-            'niveau': validated_data.get('niveau'),
-            'groupe': validated_data.get('groupe'),
-        }
-
-        if fichier:
-            ressource_data['chemin_fichier'] = fichier
-            ressource_data['taille_fichier'] = fichier.size
-
-        ressource = Ressource.objects.create(**ressource_data)
-        return ressource
-
-    def update(self, instance, validated_data):
-        # Remove file from validated_data - can't update file via PATCH
-        validated_data.pop('fichier', None)
-        return super().update(instance, validated_data)
+    def get_groupe_nom(self, obj):
+        return obj.groupe.nom_groupe if obj.groupe else None
 
 
 class RessourceCreateSerializer(serializers.ModelSerializer):

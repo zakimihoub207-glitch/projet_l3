@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Notes - Enseignant</title>
+
+    {% load static %}
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="{% static 'css/gestion_des_notes.css' %}">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="page-header">
+            <div class="breadcrumb">
+                <a href="{% url 'dashboard_enseignant' %}">Tableau de Bord</a> >
+                <span>Gestion des Notes</span> >
+                <span id="currentGroupName">Anglais A2</span>
+            </div>
+            <div class="header-content">
+                <div class="header-title">
+                    <h1>Gestion des Notes</h1>
+                    <div class="header-meta">
+                        <span>👥 <span id="studentCount">18</span> étudiants</span>
+                        <span>📚 <span id="currentLevel">Anglais Niveau A2</span></span>
+                        <span>📅 Session 2025-2026</span>
+                    </div>
+                </div>
+                <button class="btn-new" id="btnNewEval">
+                    <span>+</span>
+                    Nouvelle Évaluation
+                </button>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchInput" placeholder="Rechercher un étudiant...">
+            </div>
+            <div class="filters">
+                <div class="select-wrapper">
+                    <select id="filterEval">
+                        <option value="all">Toutes les évaluations</option>
+                        <option value="written">Devoir Écrit</option>
+                        <option value="oral">Expression Orale</option>
+                        <option value="comprehension">Compréhension</option>
+                        <option value="participation">Participation</option>
+                    </select>
+                </div>
+                <div class="select-wrapper">
+                    <select id="filterLevel">
+                        <option value="all">Tous les niveaux</option>
+                        <option value="A1">A1</option>
+                        <option value="A2">A2</option>
+                        <option value="B1">B1</option>
+                        <option value="B2">B2</option>
+                        <option value="C1">C1</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Evaluations -->
+        <div class="evaluations-section">
+            <h3 class="section-title">📋 Évaluations Récentes</h3>
+            <div class="evaluations-grid" id="evaluationsGrid">
+                <!-- Populated by JavaScript -->
+                <div class="loading-spinner">Chargement...</div>
+            </div>
+        </div>
+
+        <!-- Grades Table -->
+        <div class="grades-container">
+            <div class="grades-header">
+                <h2>📊 Saisie des Notes</h2>
+                <div class="grades-actions">
+                    <button class="btn-icon" title="Importer" id="btnImport">📥</button>
+                    <button class="btn-icon" title="Exporter" id="btnExport">📤</button>
+                    <button class="btn-icon" title="Imprimer" id="btnPrint">🖨️</button>
+                </div>
+            </div>
+
+            <div class="table-wrapper">
+                <table id="gradesTable">
+                    <thead>
+                        <tr>
+                            <th>Étudiant</th>
+                            <th>Écrit (30%)</th>
+                            <th>Oral (40%)</th>
+                            <th>Compréhension (20%)</th>
+                            <th>Participation (10%)</th>
+                            <th>Moyenne</th>
+                            <th>Niveau</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentsTableBody">
+                        <!-- Populated by JavaScript -->
+                        <tr class="loading-row">
+                            <td colspan="8">Chargement des étudiants...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="calc-info">
+                <div class="calc-icon">🧮</div>
+                <div class="calc-content">
+                    <h3>Formule de Calcul Automatique</h3>
+                    <p>La moyenne est calculée automatiquement selon la pondération définie pour chaque type d'évaluation.</p>
+                    <div class="formula">Moyenne = (Écrit×30% + Oral×40% + Compréhension×20% + Participation×10%)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer"></div>
+
+    <!-- Modal Container -->
+    <div id="modalContainer"></div>
+
+    <!-- JavaScript -->
+    <script src="{% static 'js/gestion_des_notes.js' %}"></script>
+
+    <!-- Pass Django context to JavaScript -->
+    <script>
+      window.DJANGO_CONTEXT = {
+            user: {
+                id: "{{ request.user.id|default:'' }}",
+                role: "{{ request.user.role|default:'' }}",
+                name: "{{ request.user.get_full_name|default:'' }}"
+            },
+            groupId: "{{ groupe_id|default:'' }}",
+            apiBaseUrl: "/api",
+            // NEW: Check if we have Django session
+            isAuthenticated: {{ request.user.is_authenticated|yesno:"true,false" }}
+        };
+        console.log('Django context set:', window.DJANGO_CONTEXT);
+    </script>
+</body>
+</html>

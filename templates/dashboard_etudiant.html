@@ -1,10 +1,11 @@
 <!DOCTYPE html>
+{% load static %}
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Espace Étudiant - Tableau de Bord</title>
-     <link rel="stylesheet" href="{% static 'css/dash_etu.css' %}">
+    <link rel="stylesheet" href="{% static 'css/dash_etu.css' %}">
 </head>
 <body>
     <!-- Sidebar -->
@@ -13,32 +14,15 @@
             <h1>Lingua<span>School</span></h1>
         </div>
 
-        <nav class="nav-menu">
-            <div class="nav-item active">
-                <div class="nav-icon">📊</div>
-                <span>Tableau de Bord</span>
-            </div>
-            <div class="nav-item">
-                <div class="nav-icon">📈</div>
-                <span>Mes Notes</span>
-            </div>
-            <div class="nav-item">
-                <div class="nav-icon">📅</div>
-                <span>Mon Planning</span>
-            </div>
-            <div class="nav-item">
-                <div class="nav-icon">🎓</div>
-                <span>Mon Niveau</span>
-            </div>
-            <div class="nav-item">
-                <div class="nav-icon">📁</div>
-                <span>Ressources</span>
-            </div>
-            <div class="nav-item">
-                <div class="nav-icon">💬</div>
-                <span>Messagerie</span>
-            </div>
-        </nav>
+        <ul class="nav-menu">
+            <li><a href="{% url 'dashboard_etudiant' %}" class="nav-link active">📊 Tableau de Bord</a></li>
+            <li><a href="{% url 'mes_notes' %}" class="nav-link">📈 Mes notes </a></li>
+            <li><a href="#" class="nav-link">📝 Mon Planning</a></li>
+            <li><a href="#" class="nav-link">📅 Mon niveau</a></li>
+            <li><a href="{% url 'mes_ressources' %}" class="nav-link">📚 Ressources</a></li>
+            <li><a href="{% url 'messagerie_etudiant' %}" class="nav-link">💬 Messagerie</a></li>
+            <li><a href="#" class="nav-link">⚙️ Paramètres</a></li>
+        </ul>
 
         <div class="sidebar-footer">
             <div class="user-profile">
@@ -48,7 +32,7 @@
                     <p>Étudiante - B1</p>
                 </div>
             </div>
-            <button class="btn-disconnect" onclick="handleDisconnect()">
+            <button class="btn-disconnect" id="btn-disconnect">
                 <span class="nav-icon">🚪</span>
                 <span>Déconnexion</span>
             </button>
@@ -60,7 +44,7 @@
         <div class="header">
             <h2>Bonjour, Sarah ! 👋</h2>
             <div class="header-actions">
-                <button class="btn btn-white">
+                <button class="btn btn-white" id="btn-sync-calendar">
                     <span>📅</span>
                     Synchroniser Calendrier
                 </button>
@@ -213,15 +197,6 @@
         </div>
     </main>
 
-    <script>
-        function handleDisconnect() {
-            if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
-                // Add your logout logic here
-                console.log('Déconnexion...');
-                // window.location.href = '/login';
-            }
-        }
-    </script>
-<script src="{% static 'js/dash_etu.js' %}"></script>
+    <script src="{% static 'js/dash_etu.js' %}"></script>
 </body>
 </html>

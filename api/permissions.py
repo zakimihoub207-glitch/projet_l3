@@ -3,7 +3,6 @@ from rest_framework.permissions import BasePermission
 
 # ============================================================
 # PERMISSIONS PAR RÔLE
-# Utilisation : @permission_classes([IsSecretariat])
 # ============================================================
 
 class IsSecretariat(BasePermission):
@@ -17,7 +16,7 @@ class IsSecretariat(BasePermission):
 
 
 class IsComptable(BasePermission):
-    """Comptable OU Secrétariat (le secrétariat hérite des droits comptable)"""
+    """Comptable OU Secrétariat"""
     def has_permission(self, request, view):
         return bool(
             request.user and
@@ -67,11 +66,10 @@ class IsParent(BasePermission):
 
 
 # ============================================================
-# PERMISSIONS COMBINÉES (accès multi-rôles)
+# PERMISSIONS COMBINÉES
 # ============================================================
 
 class IsSecretariatOrDirigeant(BasePermission):
-    """Secrétariat ou Dirigeant"""
     def has_permission(self, request, view):
         return bool(
             request.user and
@@ -81,7 +79,6 @@ class IsSecretariatOrDirigeant(BasePermission):
 
 
 class IsComptableOrDirigeant(BasePermission):
-    """Comptable, Secrétariat ou Dirigeant (secrétariat hérite des droits comptable)"""
     def has_permission(self, request, view):
         return bool(
             request.user and
@@ -91,7 +88,6 @@ class IsComptableOrDirigeant(BasePermission):
 
 
 class IsEnseignantOrDirigeant(BasePermission):
-    """Enseignant ou Dirigeant"""
     def has_permission(self, request, view):
         return bool(
             request.user and
@@ -111,15 +107,43 @@ class IsStaff(BasePermission):
 
 
 class IsEtudiantOrParent(BasePermission):
-    """Étudiant ou Parent"""
+    """Étudiant ou Parent - CORRECTED ✅"""
     def has_permission(self, request, view):
-
-            if not request.user or not request.user.is_authenticated:
-                return False
-            return request.user.role in ['Enseignant', 'Dirigeant']
+        if not request.user or not request.user.is_authenticated:
+            return False
+        return request.user.role in ['Etudiant', 'Parent']  # ✅ FIXED!
 
 
 class IsAuthenticated(BasePermission):
-    """Tout utilisateur connecté (tous les rôles)"""
+    """Tout utilisateur connecté"""
     def has_permission(self, request, view):
         return bool(request.user and request.user.is_authenticated)
+
+
+# ============================================================
+# PERMISSIONS POUR GESTION DES NOTES (GradeManager)
+# ============================================================
+
+class CanViewGrades(BasePermission):
+    """
+    Permission pour voir les notes:
+    - Enseignant: notes de ses groupes
+    - Étudiant: ses propres notes
+    - Parent: notes de ses enfants
+    - Staff: toutes les notes
+    """
+    def has_permission(self, request, view):
+        if not request.user or not request.user.is_authenticated:
+            return False
+        return request.user.role in [
+            'Enseignant', 'Etudiant', 'Parent',
+            'Secretariat', 'Dirigeant', 'Comptable'
+        ]
+
+
+class CanEditGrades(BasePermission):
+    """Permission pour modifier les notes (Enseignant et Staff)"""
+    def has_permission(self, request, view):
+        if not request.user or not request.user.is_authenticated:
+            return False
+        return request.user.role in ['Enseignant', 'Secretariat', 'Dirigeant']

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mes Notes - Espace Étudiant</title>
+    <link rel="stylesheet" href="{% static 'css/mes_notes.css' %}">
+</head>
+<body>
+    <div class="container">
+
+        <a href="{% url 'dashboard_etudiant' %}" class="back-btn">← Retour au Tableau de Bord</a>
+
+        <!-- Header -->
+        <div class="header">
+            <h1>📈 Mes Notes & Progression</h1>
+            <p>Historique complet de vos évaluations et évolution de votre niveau</p>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-value" id="statMoyenne">—</div>
+                <div class="stat-label">Moyenne Générale</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statNbEvals">—</div>
+                <div class="stat-label">Évaluations cette année</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statNiveau">—</div>
+                <div class="stat-label">Niveau Actuel</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statProgression">—</div>
+                <div class="stat-label">Progression vs dernier semestre</div>
+            </div>
+        </div>
+
+        <!-- Chart Évolution Mensuelle -->
+        <div class="chart-container">
+            <div class="chart-header">
+                <h3 class="chart-title">Évolution des Moyennes Mensuelles</h3>
+                <div class="chart-filters">
+                    <button class="filter-btn active" data-filter="6">6 mois</button>
+                    <button class="filter-btn" data-filter="12">1 an</button>
+                    <button class="filter-btn" data-filter="all">Tout</button>
+                </div>
+            </div>
+            <!-- Barres générées dynamiquement par JS -->
+            <div class="chart" id="chartBars">
+                <div class="chart-loading">⏳ Chargement du graphique...</div>
+            </div>
+        </div>
+
+        <!-- Répartition par Compétence (rings SVG) -->
+        <div class="chart-container">
+            <h3 class="chart-title" style="margin-bottom: 24px;">Répartition par Compétence</h3>
+            <div class="progress-ring-container" id="ringContainer">
+                <!-- Rings générés dynamiquement par JS -->
+                <div class="chart-loading">⏳ Chargement...</div>
+            </div>
+        </div>
+
+        <!-- Historique Évaluations -->
+        <div class="grades-section">
+            <div class="section-header">
+                <h3 class="chart-title">Historique des Évaluations</h3>
+                <div class="search-box">
+                    <span>🔍</span>
+                    <input type="text" id="searchInput" placeholder="Rechercher une évaluation...">
+                </div>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Date</th>
+                        <th>Note</th>
+                        <th>Coefficient</th>
+                        <th>Commentaire du professeur</th>
+                    </tr>
+                </thead>
+                <tbody id="gradesTableBody">
+                    <!-- Lignes générées dynamiquement par JS -->
+                    <tr>
+                        <td colspan="5" style="text-align:center; padding:2rem; color:#94a3b8;">
+                            ⏳ Chargement des évaluations...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <script src="{% static 'js/mes_notes.js' %}"></script>
+</body>
+</html>

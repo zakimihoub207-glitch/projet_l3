@@ -22,7 +22,7 @@
         <ul class="nav-menu">
             <li><a href="#" class="nav-link active">📊 Tableau de Bord</a></li>
             <li><a href="{% url 'mes_groupes' %}" class="nav-link">👥 Mes Groupes</a></li>
-            <li><a href="#" class="nav-link">📝 Gestion des Notes</a></li>
+            <li><a href="{% url 'notes' %}" class="nav-link">📝 Gestion des Notes</a></li>
             <li><a href="{% url 'absences' %}" class="nav-link">📅 Absences</a></li>
             <li><a href="{% url 'ressources' %}" class="nav-link">📚 Ressources</a></li>
             <li><a href="{% url 'messagerie_enseignant' %}" class="nav-link">💬 Messagerie</a></li>
@@ -67,6 +67,6 @@
 
     <!-- LINK JS -->
     <script src="{% static 'js/dash_ens.js' %}"></script>
-    <
+
 </body>
 </html>
