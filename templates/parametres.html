@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paramètres - Dashboard Dirigeant</title>
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #0f172a; color: #e2e8f0; }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+        }
+        .sidebar-link {
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            color: #94a3b8;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        .sidebar-link:hover, .sidebar-link.active {
+            background: rgba(99, 102, 241, 0.15);
+            border-right: 3px solid #6366f1;
+            color: #fff;
+        }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #cbd5e1;
+        }
+        .form-input, .form-select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 0.5rem;
+            color: #fff;
+            font-size: 0.875rem;
+            transition: border-color 0.2s;
+        }
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        .btn-primary {
+            background: #4f46e5;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            border: none;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+        .btn-primary:hover { background: #4338ca; }
+        .btn-secondary {
+            background: #334155;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            border: none;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+        .btn-secondary:hover { background: #475569; }
+        .toggle-switch {
+            position: relative;
+            width: 48px;
+            height: 24px;
+            background: #334155;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .toggle-switch.active { background: #4f46e5; }
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+        .toggle-switch.active::after { transform: translateX(24px); }
+        .tab-btn {
+            padding: 0.75rem 1.5rem;
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .tab-btn.active {
+            color: #6366f1;
+            border-bottom-color: #6366f1;
+        }
+        .color-picker {
+            width: 48px;
+            height: 48px;
+            border-radius: 0.5rem;
+            border: 2px solid #334155;
+            cursor: pointer;
+        }
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .items-center { align-items: center; }
+        .items-start { align-items: flex-start; }
+        .justify-between { justify-content: space-between; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-3 { gap: 0.75rem; }
+        .gap-4 { gap: 1rem; }
+        .gap-6 { gap: 1.5rem; }
+        .grid { display: grid; }
+        .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+        .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .h-screen { height: 100vh; }
+        .w-72 { width: 18rem; }
+        .flex-1 { flex: 1; }
+        .p-4 { padding: 1rem; }
+        .p-6 { padding: 1.5rem; }
+        .p-8 { padding: 2rem; }
+        .px-8 { padding-left: 2rem; padding-right: 2rem; }
+        .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mb-6 { margin-bottom: 1.5rem; }
+        .mt-4 { margin-top: 1rem; }
+        .mr-2 { margin-right: 0.5rem; }
+        .space-y-4 > * + * { margin-top: 1rem; }
+        .space-y-6 > * + * { margin-top: 1.5rem; }
+        .rounded-lg { border-radius: 0.5rem; }
+        .rounded-xl { border-radius: 0.75rem; }
+        .rounded-2xl { border-radius: 1rem; }
+        .rounded-full { border-radius: 9999px; }
+        .border-b { border-bottom: 1px solid #334155; }
+        .border-t { border-top: 1px solid #334155; }
+        .text-xs { font-size: 0.75rem; }
+        .text-sm { font-size: 0.875rem; }
+        .text-lg { font-size: 1.125rem; }
+        .text-2xl { font-size: 1.5rem; }
+        .font-medium { font-weight: 500; }
+        .font-semibold { font-weight: 600; }
+        .font-bold { font-weight: 700; }
+        .text-white { color: #fff; }
+        .text-slate-400 { color: #94a3b8; }
+        .text-slate-500 { color: #64748b; }
+        .text-indigo-400 { color: #818cf8; }
+        .text-emerald-400 { color: #34d399; }
+        .text-amber-400 { color: #fbbf24; }
+        .text-red-400 { color: #f87171; }
+        .bg-slate-800 { background: #1e293b; }
+        .bg-slate-900 { background: #0f172a; }
+        .bg-slate-800\/50 { background: rgba(30, 41, 59, 0.5); }
+        .bg-indigo-500\/20 { background: rgba(99, 102, 241, 0.2); }
+        .bg-emerald-500\/20 { background: rgba(16, 185, 129, 0.2); }
+        .bg-amber-500\/20 { background: rgba(245, 158, 11, 0.2); }
+        .bg-red-500\/20 { background: rgba(239, 68, 68, 0.2); }
+        .overflow-y-auto { overflow-y: auto; }
+        .sticky { position: sticky; }
+        .top-0 { top: 0; }
+        .z-20 { z-index: 20; }
+        .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        @media (min-width: 768px) {
+            .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .md\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        }
+        @media (min-width: 1024px) {
+            .lg\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        }
+    </style>
+</head>
+<body>
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <aside class="w-72 glass-panel flex flex-col">
+            <div class="p-6 border-b">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg, #6366f1, #9333ea);">
+                        <i class="fas fa-graduation-cap text-white"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg text-white">LanguePro</h1>
+                        <p class="text-xs text-slate-400">Espace Dirigeant</p>
+                    </div>
+                </div>
+            </div>
+            <nav class="flex-1 py-6 px-3 space-y-4">
+                  <a href="{% url 'dashboard_dirigeant' %}" class="sidebar-link"><i class="fas fa-chart-line"></i>Tableau de Bord</a>
+                 <a href="{% url 'audit' %}" class="sidebar-link "><i class="fas fa-history text-indigo-400"></i>Audit & Logs</a>
+                <a href="{% url 'utilisateurs' %}" class="sidebar-link"><i class="fas fa-chalkboard-teacher"></i>utilisateur</a>
+                 <a href="{% url 'rapports' %}" class="sidebar-link ">
+                    <i class="fas fa-file-alt"></i>
+                    Rapport
+                </a>
+                
+                <a href="{% url 'finance' %}" class="sidebar-link "><i class="fas fa-wallet"></i>Finances</a>
+                  <a href="{% url 'parametres' %}" class="sidebar-link active">
+                    <i class="fas fa-cog"></i>
+                    Paramètres
+                </a>
+                <a href="#" class="sidebar-link logout-link">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Déconnexion
+                </a>
+            </nav>
+
+            <div class="p-4 border-t">
+                <div class="flex items-center gap-3 p-3 rounded-lg bg-slate-800/50">
+                    <img src="https://ui-avatars.com/api/?name=Admin&background=6366f1&color=fff" class="w-10 h-10 rounded-full">
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-white truncate">Directeur</p>
+                        <p class="text-xs text-slate-400 truncate">dirigeant@languepro.com</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto bg-slate-900">
+            <header class="sticky top-0 z-20 glass-panel border-b px-8 py-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-2xl font-bold text-white">Paramètres du Centre</h2>
+                        <p class="text-sm text-slate-400">Configuration générale de l'établissement</p>
+                    </div>
+                    <button class="btn-primary"><i class="fas fa-save mr-2"></i>Enregistrer</button>
+                </div>
+            </header>
+
+            <div class="p-8 space-y-6">
+                <!-- Tabs -->
+                <div class="glass-panel p-2 flex gap-2">
+                    <button class="tab-btn active">Informations</button>
+                    <button class="tab-btn">Langues & Niveaux</button>
+                    <button class="tab-btn">Tarifs</button>
+                    <button class="tab-btn">Notifications</button>
+                    <button class="tab-btn">Sécurité</button>
+                </div>
+
+                <!-- General Info -->
+                <div class="glass-panel p-6">
+                    <h3 class="text-lg font-semibold text-white mb-6">Informations du Centre</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="form-group">
+                            <label class="form-label">Nom de l'établissement</label>
+                            <input type="text" class="form-input" value="LanguePro Academy">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email principal</label>
+                            <input type="email" class="form-input" value="contact@languepro.com">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Téléphone</label>
+                            <input type="tel" class="form-input" value="+33 1 23 45 67 89">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Site web</label>
+                            <input type="url" class="form-input" value="https://www.languepro.com">
+                        </div>
+                        <div class="form-group md:col-span-2">
+                            <label class="form-label">Adresse</label>
+                            <input type="text" class="form-input" value="123 Avenue des Langues, 75001 Paris">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Numéro SIRET</label>
+                            <input type="text" class="form-input" value="123 456 789 00012">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">TVA Intracommunautaire</label>
+                            <input type="text" class="form-input" value="FR12345678901">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Branding -->
+                <div class="glass-panel p-6">
+                    <h3 class="text-lg font-semibold text-white mb-6">Identité Visuelle</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <label class="form-label">Logo du centre</label>
+                            <div class="p-4 border-2 border-dashed border-slate-700 rounded-xl text-center">
+                                <i class="fas fa-cloud-upload-alt text-3xl text-slate-500 mb-2"></i>
+                                <p class="text-sm text-slate-400">Glissez ou cliquez pour uploader</p>
+                                <p class="text-xs text-slate-500 mt-1">PNG, JPG (max 2MB)</p>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="form-label">Couleur primaire</label>
+                            <div class="flex items-center gap-3">
+                                <input type="color" class="color-picker" value="#6366f1">
+                                <span class="text-sm text-slate-400">#6366f1</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="form-label">Couleur secondaire</label>
+                            <div class="flex items-center gap-3">
+                                <input type="color" class="color-picker" value="#a855f7">
+                                <span class="text-sm text-slate-400">#a855f7</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Academic Settings -->
+                <div class="glass-panel p-6">
+                    <h3 class="text-lg font-semibold text-white mb-6">Paramètres Académiques</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="form-group">
+                            <label class="form-label">Seuil de réussite (%)</label>
+                            <input type="number" class="form-input" value="10" min="0" max="20">
+                            <p class="text-xs text-slate-500 mt-1">Moyenne minimale pour passer au niveau supérieur</p>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Nombre max d'absences</label>
+                            <input type="number" class="form-input" value="3" min="1">
+                            <p class="text-xs text-slate-500 mt-1">Alerte déclenchée après ce nombre d'absences</p>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Durée d'une séance (min)</label>
+                            <input type="number" class="form-input" value="90" step="15">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Capacité max par groupe</label>
+                            <input type="number" class="form-input" value="15" min="1" max="30">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Settings -->
+                <div class="glass-panel p-6">
+                    <h3 class="text-lg font-semibold text-white mb-6">Paramètres Système</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between p-4 bg-slate-800 rounded-lg">
+                            <div>
+                                <h4 class="font-medium text-white">Mode maintenance</h4>
+                                <p class="text-sm text-slate-400">Rendre l'application inaccessible aux utilisateurs</p>
+                            </div>
+                            <div class="toggle-switch" onclick="this.classList.toggle('active')"></div>
+                        </div>
+                        <div class="flex items-center justify-between p-4 bg-slate-800 rounded-lg">
+                            <div>
+                                <h4 class="font-medium text-white">Inscriptions ouvertes</h4>
+                                <p class="text-sm text-slate-400">Permettre aux nouveaux étudiants de s'inscrire</p>
+                            </div>
+                            <div class="toggle-switch active" onclick="this.classList.toggle('active')"></div>
+                        </div>
+                        <div class="flex items-center justify-between p-4 bg-slate-800 rounded-lg">
+                            <div>
+                                <h4 class="font-medium text-white">Backup automatique</h4>
+                                <p class="text-sm text-slate-400">Sauvegarde quotidienne à 02:00</p>
+                            </div>
+                            <div class="toggle-switch active" onclick="this.classList.toggle('active')"></div>
+                        </div>
+                        <div class="flex items-center justify-between p-4 bg-slate-800 rounded-lg">
+                            <div>
+                                <h4 class="font-medium text-white">Double authentification (2FA)</h4>
+                                <p class="text-sm text-slate-400">Obligatoire pour tous les utilisateurs</p>
+                            </div>
+                            <div class="toggle-switch" onclick="this.classList.toggle('active')"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>
